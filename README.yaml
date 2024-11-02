@@ -1,70 +1,96 @@
-name: "template"
-
+name: "aws-vpc"
 # Canonical GitHub repo
-github_repo: "cloudposse-terraform-components/template"
-
+github_repo: "cloudposse-terraform-components/aws-vpc"
 # Short description of this project
 description: |-
-  Description of this component
+  This component is responsible for provisioning a VPC and corresponding Subnets. Additionally, VPC Flow Logs can
+  optionally be enabled for auditing purposes. See the existing VPC configuration documentation for the provisioned
+  subnets.
 
-usage: |-
-  **Stack Level**: Regional or Test47
+  ## Usage
+
+  **Stack Level**: Regional
 
   Here's an example snippet for how to use this component.
-  
+
   ```yaml
+  # catalog/vpc/defaults or catalog/vpc
   components:
     terraform:
-      foo:
+      vpc/defaults:
+        metadata:
+          type: abstract
+          component: vpc
+        settings:
+          spacelift:
+            workspace_enabled: true
         vars:
           enabled: true
+          name: vpc
+          availability_zones:
+            - "a"
+            - "b"
+            - "c"
+          nat_gateway_enabled: true
+          nat_instance_enabled: false
+          max_subnet_count: 3
+          vpc_flow_logs_enabled: true
+          vpc_flow_logs_bucket_environment_name: <environment>
+          vpc_flow_logs_bucket_stage_name: audit
+          vpc_flow_logs_traffic_type: "ALL"
+          subnet_type_tag_key: "example.net/subnet/type"
+          assign_generated_ipv6_cidr_block: true
   ```
 
+  ```yaml
+  import:
+    - catalog/vpc
+
+  components:
+    terraform:
+      vpc:
+        metadata:
+          component: vpc
+          inherits:
+            - vpc/defaults
+        vars:
+          ipv4_primary_cidr_block: "10.111.0.0/18"
+  ```
+
+  <!-- prettier-ignore-start -->
+
+  <!-- prettier-ignore-end -->
+
+  ## References
+
+  - [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/main/modules/vpc) -
+    Cloud Posse's upstream component
 include:
   - "docs/terraform.md"
-
 tags:
-  - terraform
-  - terraform-modules
-  - aws
-  - components
-  - terraform-components
-  - root
-  - geodesic
-  - reference-implementation
-  - reference-architecture
-
+  - component/vpc
+  - layer/network
+  - provider/aws
 # Categories of this project
 categories:
-  - terraform-modules/root
-  - terraform-components
-
+  - component/vpc
+  - layer/network
+  - provider/aws
 # License of this project
 license: "APACHE2"
-
 # Badges to display
 badges:
-  - name: "Latest Release"
-    image: "https://img.shields.io/github/release/cloudposse-terraform-components/template.svg?style=for-the-badge"
-    url: "https://github.com/cloudposse-terraform-components/template/releases/latest"
-  - name: "Slack Community"
-    image: "https://slack.cloudposse.com/for-the-badge.svg"
-    url: "https://slack.cloudposse.com"
-
-references:
-  - name: "Cloud Posse Documentation"
-    description: "Complete documentation for the Cloud Posse solution"
-    url: "https://docs.cloudposse.com"
-  - name: "Reference Architectures"
-    description: "Launch effortlessly with our turnkey reference architectures, built either by your team or ours."
-    url: "https://cloudposse.com/"
-
+  - name: Latest Release
+    image: https://img.shields.io/github/release/cloudposse-terraform-components/aws-vpc.svg?style=for-the-badge
+    url: https://github.com/cloudposse-terraform-components/aws-vpc/releases/latest
+  - name: Slack Community
+    image: https://slack.cloudposse.com/for-the-badge.svg
+    url: https://slack.cloudposse.com
 related:
-- name: "Cloud Posse Terraform Modules"
-  description: Our collection of reusable Terraform modules used by our reference architectures.
-  url: "https://docs.cloudposse.com/modules/"
-- name: "Atmos"
-  description: "Atmos is like docker-compose but for your infrastructure"
-  url: "https://atmos.tools"
-
+  - name: "Cloud Posse Terraform Modules"
+    description: Our collection of reusable Terraform modules used by our reference architectures.
+    url: "https://docs.cloudposse.com/modules/"
+  - name: "Atmos"
+    description: "Atmos is like docker-compose but for your infrastructure"
+    url: "https://atmos.tools"
 contributors: [] # If included generates contribs
