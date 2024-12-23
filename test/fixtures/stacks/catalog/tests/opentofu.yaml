@@ -1,0 +1,42 @@
+components:
+  terraform:
+    vpc/opentofu:
+      command: "tofu"
+      metadata:
+        component: vpc
+      settings:
+        test:
+          suite: opentofu
+          test: two-private-subnets
+          stage: subjectUnderTest
+      vars:
+        name: "vpc-tofu"
+        availability_zones:
+          - "a"
+          - "b"
+        # If we want to do functional testing of the bastion, we need public subnets,
+        # internet gateway, and NAT gateway, but those are expensive and for now,
+        # we are just doing basic smoke testing, so we skip them.
+        #        public_subnets_enabled: true
+        #        max_nats: 1
+        #        nat_gateway_enabled: true
+        public_subnets_enabled: false
+        nat_gateway_enabled: false
+        nat_instance_enabled: false
+        subnet_type_tag_key: "eg.cptest.co/subnet/type"
+        max_subnet_count: 3
+        vpc_flow_logs_enabled: false
+        ipv4_primary_cidr_block: "172.16.0.0/16"
+
+    assert/opentofu:
+      command: "tofu"
+      metadata:
+        component: assert
+      settings:
+        test:
+          suite: opentofu
+          test: two-private-subnets
+          stage: assert
+      vars:
+        name: "assert"
+        component: "vpc/opentofu"
