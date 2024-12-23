@@ -16,7 +16,8 @@ provider "aws" {
 }
 
 module "iam_roles" {
-  source  = "../account-map/modules/iam-roles"
+  source  = "cloudposse/components/aws//modules/account-map/modules/iam-roles"
+  version = "1.534.0"
   context = module.this.context
 }
 
