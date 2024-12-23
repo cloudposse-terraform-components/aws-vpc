@@ -1,7 +1,7 @@
 import:
   - catalog/account-map
-  - catalog/tests/terraform
-  - catalog/tests/opentofu
+  - catalog/tests/minimal
+  - catalog/tests/full
 
 terraform:
   backend_type: local

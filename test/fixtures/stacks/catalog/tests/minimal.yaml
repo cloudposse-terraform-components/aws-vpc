@@ -1,16 +1,15 @@
 components:
   terraform:
-    vpc/opentofu:
-      command: "tofu"
+    vpc/minimal:
       metadata:
         component: vpc
       settings:
         test:
-          suite: opentofu
-          test: two-private-subnets
+          suite: terraform
+          test: minimal
           stage: subjectUnderTest
       vars:
-        name: "vpc-tofu"
+        name: "vpc-terraform"
         availability_zones:
           - "a"
           - "b"
@@ -28,15 +27,14 @@ components:
         vpc_flow_logs_enabled: false
         ipv4_primary_cidr_block: "172.16.0.0/16"
 
-    assert/opentofu:
-      command: "tofu"
+    assert/minimal:
       metadata:
-        component: assert
+        component: assert/minimal
       settings:
         test:
-          suite: opentofu
-          test: two-private-subnets
+          suite: terraform
+          test: minimal
           stage: assert
       vars:
         name: "assert"
-        component: "vpc/opentofu"
+        component: "vpc/minimal"

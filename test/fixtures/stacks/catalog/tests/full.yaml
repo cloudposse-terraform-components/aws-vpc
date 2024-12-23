@@ -1,12 +1,12 @@
 components:
   terraform:
-    vpc/terraform:
+    vpc/full:
       metadata:
         component: vpc
       settings:
         test:
           suite: terraform
-          test: two-private-subnets
+          test: full
           stage: subjectUnderTest
       vars:
         name: "vpc-terraform"
@@ -27,14 +27,14 @@ components:
         vpc_flow_logs_enabled: false
         ipv4_primary_cidr_block: "172.16.0.0/16"
 
-    assert/terraform:
+    assert/full:
       metadata:
-        component: assert
+        component: assert/full
       settings:
         test:
           suite: terraform
-          test: two-private-subnets
+          test: full
           stage: assert
       vars:
         name: "assert"
-        component: "vpc/terraform"
+        component: "vpc/full"
