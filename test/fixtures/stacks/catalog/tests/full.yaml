@@ -29,7 +29,7 @@ components:
 
     assert/full:
       metadata:
-        component: assert/full
+        component: assert-full
       settings:
         test:
           suite: terraform

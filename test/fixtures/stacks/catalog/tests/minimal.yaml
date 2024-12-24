@@ -29,7 +29,7 @@ components:
 
     assert/minimal:
       metadata:
-        component: assert/minimal
+        component: assert-minimal
       settings:
         test:
           suite: terraform
