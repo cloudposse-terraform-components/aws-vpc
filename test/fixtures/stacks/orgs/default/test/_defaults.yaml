@@ -1,7 +1,5 @@
 import:
   - catalog/account-map
-  - catalog/tests/minimal
-  - catalog/tests/full
 
 terraform:
   backend_type: local

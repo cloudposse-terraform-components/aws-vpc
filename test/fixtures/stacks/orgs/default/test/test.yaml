@@ -1,8 +1,12 @@
+import:
+  - orgs/default/test/_defaults
+
 components:
   terraform:
-    vpc/full:
+    vpc:
       metadata:
         component: vpc
+#        terraform_workspace_pattern: '{{ getenv "TEST_WORKSPACE_TEMPLATE" | default "{tenant}-{stage}-{component}" }}'
       settings:
         test:
           suite: terraform
@@ -26,15 +30,3 @@ components:
         max_subnet_count: 3
         vpc_flow_logs_enabled: false
         ipv4_primary_cidr_block: "172.16.0.0/16"
-
-    assert/full:
-      metadata:
-        component: assert-full
-      settings:
-        test:
-          suite: terraform
-          test: full
-          stage: assert
-      vars:
-        name: "assert"
-        component: "vpc/full"

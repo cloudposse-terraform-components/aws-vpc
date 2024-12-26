@@ -41,6 +41,10 @@ stacks:
   included_paths:
     - "orgs/**/*"
 
+  # Can also be set using `ATMOS_STACKS_EXCLUDED_PATHS` ENV var (comma-separated values string)
+  excluded_paths:
+    - "**/_defaults.yaml"
+
   # Can also be set using `ATMOS_STACKS_NAME_PATTERN` ENV var
   name_pattern: "{tenant}-{stage}"
 
