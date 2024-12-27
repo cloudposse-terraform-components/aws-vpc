@@ -3,16 +3,16 @@ module test
 go 1.23.0
 
 require (
-	github.com/cloudposse/test-helpers v0.12.1-0.20241226164031-5a0f353392b0
+	github.com/cloudposse/test-helpers v0.12.1-0.20241227212405-87e18b426e40
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/gruntwork-io/terratest v0.47.1 // indirect
+	github.com/gruntwork-io/terratest v0.47.1
 	github.com/mattn/go-zglob v0.0.3 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/stretchr/testify v1.9.0 // indirect
+	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-// replace github.com/cloudposse/test-helpers => /Users/goruha/projects/cloudposse/current/cloudposse-terraform-components/test-helpers
+replace github.com/cloudposse/test-helpers => /Users/goruha/projects/cloudposse/current/cloudposse-terraform-components/test-helpers
 
 // replace github.com/rebuy-de/aws-nuke/v2/mocks => github.com/ekristen/aws-nuke/v3/ v3.29.0
 
@@ -68,7 +68,6 @@ require (
 	github.com/pquerna/otp v1.4.0 // indirect
 	github.com/rogpeppe/go-internal v1.13.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/tidwall/jsonc v0.3.2 // indirect
 	github.com/tmccombs/hcl2json v0.3.4 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/urfave/cli/v2 v2.27.5 // indirect

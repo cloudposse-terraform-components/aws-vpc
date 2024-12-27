@@ -6,7 +6,7 @@ components:
     vpc:
       metadata:
         component: vpc
-#        terraform_workspace_pattern: '{{ getenv "TEST_WORKSPACE_TEMPLATE" | default "{tenant}-{stage}-{component}" }}'
+        # terraform_workspace_pattern: '{{ getenv "TEST_WORKSPACE_TEMPLATE" | default "{tenant}-{stage}-{component}" }}'
       settings:
         test:
           suite: terraform
