@@ -23,9 +23,7 @@ func TestComponent(t *testing.T) {
 	fixture.SetUp(&atmos.Options{})
 
 	fixture.Suite("default", func(t *testing.T, suite *helper.Suite) {
-		t.Parallel()
 		suite.Test(t, "two-private-subnets", func(t *testing.T, atm *helper.Atmos) {
-			t.Parallel()
 			inputs := map[string]interface{}{
 				"name":                    "vpc-terraform",
 				"availability_zones":      []string{"a", "b"},
@@ -79,7 +77,6 @@ func TestComponent(t *testing.T) {
 		})
 
 		suite.Test(t, "public-private-subnets", func(t *testing.T, atm *helper.Atmos) {
-			t.Parallel()
 			inputs := map[string]interface{}{
 				"name":                    "vpc-terraform",
 				"availability_zones":      []string{"b", "c"},
