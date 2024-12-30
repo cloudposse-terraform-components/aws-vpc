@@ -17,6 +17,18 @@ spec:
         - "**/modules/**"
       excluded_paths: []
 
+    - component: "vpc-flow-logs-bucket"
+      source: github.com/cloudposse-terraform-components/aws-vpc-flow-logs-bucket.git//src?ref={{.Version}}
+      version: v1.534.0
+      targets:
+        - "components/terraform/vpc-flow-logs-bucket"
+      included_paths:
+        - "**/*.tf"
+        - "**/*.md"
+        - "**/*.tftmpl"
+        - "**/modules/**"
+      excluded_paths: []
+
     - component: "vpc"
       source: "../../src"
       targets:
