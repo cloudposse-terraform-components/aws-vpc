@@ -4,7 +4,7 @@ components:
   terraform:
     vpc/with_ipam:
       metadata:
-        component: vpc
+        component: target
       vars:
         enabled: false
         name: "vpc-terraform"
