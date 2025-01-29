@@ -2,7 +2,7 @@ components:
   terraform:
     vpc/public:
       metadata:
-        component: vpc
+        component: target
       vars:
         name: "vpc-terraform"
         availability_zones:

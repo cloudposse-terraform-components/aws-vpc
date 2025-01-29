@@ -10,11 +10,11 @@ components:
         noncurrent_version_transition_days: 30
         standard_transition_days: 60
         glacier_transition_days: 180
-        expiration_days: 365        
+        expiration_days: 365
 
     vpc/with_flowlogs:
       metadata:
-        component: vpc
+        component: target
       vars:
         name: "vpc-terraform"
         availability_zones:
