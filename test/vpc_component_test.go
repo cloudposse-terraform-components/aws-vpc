@@ -16,11 +16,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type VpcComponentSuite struct {
+type ComponentSuite struct {
 	helper.TestSuite
 }
 
-func (s *VpcComponentSuite) TestPrivateVPC() {
+func (s *ComponentSuite) TestPrivateVPC() {
 	const component = "vpc/private"
 	const stack = "default-test"
 	const awsRegion = "us-east-2"
@@ -68,7 +68,7 @@ func (s *VpcComponentSuite) TestPrivateVPC() {
 	assert.Equal(s.T(), 0, len(nats))
 }
 
-func (s *VpcComponentSuite) TestPublicVPC() {
+func (s *ComponentSuite) TestPublicVPC() {
 	const component = "vpc/public"
 	const stack = "default-test"
 	const awsRegion = "us-east-2"
@@ -118,7 +118,7 @@ func (s *VpcComponentSuite) TestPublicVPC() {
 	assert.Equal(s.T(), 1, len(nats))
 }
 
-func (s *VpcComponentSuite) TestEnabledFlag() {
+func (s *ComponentSuite) TestEnabledFlag() {
 	s.T().Skip("Skipping disabled VPC test")
 	const component = "vpc/disabled"
 	const stack = "default-test"
@@ -126,7 +126,7 @@ func (s *VpcComponentSuite) TestEnabledFlag() {
 }
 
 func TestRunVPCSuite(t *testing.T) {
-	suite := new(VpcComponentSuite)
+	suite := new(ComponentSuite)
 	helper.Run(t, suite)
 }
 
