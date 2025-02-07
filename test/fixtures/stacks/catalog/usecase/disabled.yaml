@@ -6,3 +6,4 @@ components:
       vars:
         name: "vpc-terraform"
         enabled: false
+        subnet_type_tag_key: "eg.cptest.co/subnet/type"
