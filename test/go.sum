@@ -91,6 +91,14 @@ github.com/charmbracelet/log v0.4.0 h1:G9bQAcx8rWA2T3pWvx7YtPTPwgqpk7D68BX21IRW8
 github.com/charmbracelet/log v0.4.0/go.mod h1:63bXt/djrizTec0l11H20t8FDSvA4CRZJ1KH22MdptM=
 github.com/cloudposse/test-helpers v0.15.1-0.20250211192848-4d22e9de0b10 h1:bxZKVvbpBqbwzv/PJco9eIE1qkjVnGLykkUPUTZQ0oc=
 github.com/cloudposse/test-helpers v0.15.1-0.20250211192848-4d22e9de0b10/go.mod h1:9h/DRRVJiYFcMoKTS8BYRWlCrmffk/2OZyxN6wyauqA=
+github.com/cloudposse/test-helpers v0.15.1-0.20250211221357-f27b5fcb24a1 h1:G8rXP+Hs8tRPi9iGICAR2ZMDkqB0awbrRLE70yckLvI=
+github.com/cloudposse/test-helpers v0.15.1-0.20250211221357-f27b5fcb24a1/go.mod h1:9h/DRRVJiYFcMoKTS8BYRWlCrmffk/2OZyxN6wyauqA=
+github.com/cloudposse/test-helpers v0.15.1-0.20250211221549-51e29e3049a9 h1:DsnKk9ejhcn6OhsQqOe6/nyMjYBWINbE4MiOwmDHsZE=
+github.com/cloudposse/test-helpers v0.15.1-0.20250211221549-51e29e3049a9/go.mod h1:9h/DRRVJiYFcMoKTS8BYRWlCrmffk/2OZyxN6wyauqA=
+github.com/cloudposse/test-helpers v0.15.1-0.20250211222900-961cd4a8569e h1:/uPBHFFh+oAsKNYxpBRdaxo1OpdUSa5/hkTeX1+Cdv0=
+github.com/cloudposse/test-helpers v0.15.1-0.20250211222900-961cd4a8569e/go.mod h1:9h/DRRVJiYFcMoKTS8BYRWlCrmffk/2OZyxN6wyauqA=
+github.com/cloudposse/test-helpers v0.15.1-0.20250211225134-4b584567b745 h1:9NMALtYknTupBEsMBj0awX43U8oxpxarhhLI2UgAIKM=
+github.com/cloudposse/test-helpers v0.15.1-0.20250211225134-4b584567b745/go.mod h1:9h/DRRVJiYFcMoKTS8BYRWlCrmffk/2OZyxN6wyauqA=
 github.com/cpuguy83/go-md2man/v2 v2.0.5 h1:ZtcqGrnekaHpVLArFSe4HK5DoKx1T0rq2DwVB0alcyc=
 github.com/cpuguy83/go-md2man/v2 v2.0.5/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

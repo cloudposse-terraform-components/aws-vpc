@@ -63,6 +63,8 @@ func (s *ComponentSuite) TestPrivateVPC() {
 	nats, err := awshelper.GetNatsByVpcIdE(s.T(), vpcId, awsRegion)
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), 0, len(nats))
+
+	s.DriftTest(component, stack, nil)
 }
 
 func (s *ComponentSuite) TestPublicVPC() {
@@ -113,10 +115,11 @@ func (s *ComponentSuite) TestPublicVPC() {
 	nats, err := awshelper.GetNatsByVpcIdE(s.T(), vpcId, awsRegion)
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), 1, len(nats))
+
+	s.DriftTest(component, stack, nil)
 }
 
 func (s *ComponentSuite) TestEnabledFlag() {
-	s.T().Skip("Skipping disabled VPC test")
 	const component = "vpc/disabled"
 	const stack = "default-test"
 	s.VerifyEnabledFlag(component, stack, nil)
