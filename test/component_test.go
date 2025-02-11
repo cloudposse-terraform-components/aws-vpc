@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/cloudposse/test-helpers/pkg/atmos"
 	helper "github.com/cloudposse/test-helpers/pkg/atmos/component-helper"
+	awshelper "github.com/cloudposse/test-helpers/pkg/aws"
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -113,7 +114,7 @@ func (s *ComponentSuite) TestPublicVPC() {
 	assert.True(s.T(), aws.IsPublicSubnet(s.T(), public_subnet_ids[0], awsRegion))
 	assert.True(s.T(), aws.IsPublicSubnet(s.T(), public_subnet_ids[1], awsRegion))
 
-	nats, err := GetNatsByVpcIdE(s.T(), vpcId, awsRegion)
+	nats, err := awshelper.GetNatsByVpcIdE(s.T(), vpcId, awsRegion)
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), 1, len(nats))
 }
@@ -128,20 +129,4 @@ func (s *ComponentSuite) TestEnabledFlag() {
 func TestRunVPCSuite(t *testing.T) {
 	suite := new(ComponentSuite)
 	helper.Run(t, suite)
-}
-
-func GetNatsByVpcIdE(t *testing.T, vpcId string, awsRegion string) ([]types.NatGateway, error) {
-	client, err := aws.NewEc2ClientE(t, awsRegion)
-	if err != nil {
-		return nil, err
-	}
-
-	filter := &types.Filter{Name: awstypes.String("vpc-id"), Values: []string{vpcId}}
-	response, err := client.DescribeNatGateways(context.Background(), &ec2.DescribeNatGatewaysInput{
-		Filter: []types.Filter{*filter},
-	})
-	if err != nil {
-		return nil, err
-	}
-	return response.NatGateways, nil
 }
