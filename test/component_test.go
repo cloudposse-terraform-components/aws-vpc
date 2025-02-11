@@ -1,14 +1,10 @@
 package test
 
 import (
-	"context"
 	"fmt"
 	"strings"
 	"testing"
 
-	awstypes "github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/cloudposse/test-helpers/pkg/atmos"
 	helper "github.com/cloudposse/test-helpers/pkg/atmos/component-helper"
 	awshelper "github.com/cloudposse/test-helpers/pkg/aws"
@@ -64,7 +60,7 @@ func (s *ComponentSuite) TestPrivateVPC() {
 	assert.False(s.T(), aws.IsPublicSubnet(s.T(), subnets[0].Id, awsRegion))
 	assert.False(s.T(), aws.IsPublicSubnet(s.T(), subnets[1].Id, awsRegion))
 
-	nats, err := GetNatsByVpcIdE(s.T(), vpcId, awsRegion)
+	nats, err := awshelper.GetNatsByVpcIdE(s.T(), vpcId, awsRegion)
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), 0, len(nats))
 }
