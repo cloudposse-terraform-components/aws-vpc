@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -60,7 +61,7 @@ func (s *ComponentSuite) TestPrivateVPC() {
 	assert.False(s.T(), aws.IsPublicSubnet(s.T(), subnets[0].Id, awsRegion))
 	assert.False(s.T(), aws.IsPublicSubnet(s.T(), subnets[1].Id, awsRegion))
 
-	nats, err := awshelper.GetNatsByVpcIdE(s.T(), vpcId, awsRegion)
+	nats, err := awshelper.GetNatGatewaysByVpcIdE(s.T(), context.Background(), vpcId, awsRegion)
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), 0, len(nats))
 
@@ -112,7 +113,7 @@ func (s *ComponentSuite) TestPublicVPC() {
 	assert.True(s.T(), aws.IsPublicSubnet(s.T(), public_subnet_ids[0], awsRegion))
 	assert.True(s.T(), aws.IsPublicSubnet(s.T(), public_subnet_ids[1], awsRegion))
 
-	nats, err := awshelper.GetNatsByVpcIdE(s.T(), vpcId, awsRegion)
+	nats, err := awshelper.GetNatGatewaysByVpcIdE(s.T(), context.Background(), vpcId, awsRegion)
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), 1, len(nats))
 
