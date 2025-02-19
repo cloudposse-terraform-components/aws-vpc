@@ -1,0 +1,28 @@
+# @TODO: Add example of how to use the vpc with flow logs
+components:
+  terraform:
+    vpc-flow-logs-bucket:
+      metadata:
+        component: vpc-flow-logs-bucket
+      vars:
+        name: "vpc-flow-logs-bucket"
+        noncurrent_version_expiration_days: 180
+        noncurrent_version_transition_days: 30
+        standard_transition_days: 60
+        glacier_transition_days: 180
+        expiration_days: 365
+
+    vpc/with_flowlogs:
+      metadata:
+        component: target
+      vars:
+        name: "vpc-terraform"
+        availability_zones:
+          - "a"
+        public_subnets_enabled: false
+        nat_gateway_enabled: false
+        nat_instance_enabled: false
+        subnet_type_tag_key: "eg.cptest.co/subnet/type"
+        max_subnet_count: 3
+        vpc_flow_logs_enabled: false
+        ipv4_primary_cidr_block: "172.16.0.0/16"
