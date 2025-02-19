@@ -244,3 +244,28 @@ variable "subnets_per_az_names" {
   default     = ["common"]
   nullable    = false
 }
+
+variable "vpc_flow_logs_bucket_component_name" {
+  type        = string
+  description = "The name of the VPC flow logs bucket component"
+  default     = "vpc-flow-logs-bucket"
+}
+
+variable "vpc_flow_logs_destination_options_file_format" {
+  type        = string
+  description = "VPC Flow Logs file format"
+  default     = "parquet"
+}
+
+variable "vpc_flow_logs_destination_options_hive_compatible_partitions" {
+  type        = bool
+  description = "Flag to enable/disable VPC Flow Logs hive compatible partitions"
+  default     = false
+}
+
+variable "vpc_flow_logs_destination_options_per_hour_partition" {
+  type        = bool
+  description = "Flag to enable/disable VPC Flow Logs per hour partition"
+  default     = false
+}
+
