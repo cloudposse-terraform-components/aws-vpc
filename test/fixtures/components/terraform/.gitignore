@@ -1,0 +1,6 @@
+*
+# Module directory
+# Note that the leading "**/" appears necessary for Docker even if not for Git
+!assert*
+!assert*/*.tf
+
