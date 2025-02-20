@@ -1,4 +1,3 @@
-# @TODO: Add example of how to use the vpc with flow logs
 components:
   terraform:
     vpc-flow-logs-bucket:
@@ -24,5 +23,6 @@ components:
         nat_instance_enabled: false
         subnet_type_tag_key: "eg.cptest.co/subnet/type"
         max_subnet_count: 3
-        vpc_flow_logs_enabled: false
+        vpc_flow_logs_enabled: true
+        vpc_flow_logs_bucket_component_name: "vpc-flow-logs-bucket"
         ipv4_primary_cidr_block: "172.16.0.0/16"
