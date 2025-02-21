@@ -169,11 +169,11 @@ func (s *ComponentSuite) TestVPCFlowLogs() {
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), 1, len(nats))
 
-	flow_log_destination := atmos.OutputList(s.T(), options, "flow_log_destination")
-	assert.Equal(s.T(), 1, len(flow_log_destination))
+	flow_log_destination := atmos.Output(s.T(), options, "flow_log_destination")
+	assert.NotEmpty(s.T(), flow_log_destination)
 
-	flow_log_id := atmos.OutputList(s.T(), options, "flow_log_id")
-	assert.Equal(s.T(), 1, len(flow_log_id))
+	flow_log_id := atmos.Output(s.T(), options, "flow_log_id")
+	assert.NotEmpty(s.T(), flow_log_id)
 
 	s.DriftTest(component, stack, nil)
 }
