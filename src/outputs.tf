@@ -136,5 +136,5 @@ output "flow_log_destination" {
 
 output "flow_log_id" {
   description = "ID of the VPC flow log"
-  value       = aws_flow_log.default.id
+  value       = try(aws_flow_log.default[*].id, "")
 }
