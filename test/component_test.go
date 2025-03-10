@@ -186,5 +186,8 @@ func (s *ComponentSuite) TestEnabledFlag() {
 
 func TestRunVPCSuite(t *testing.T) {
 	suite := new(ComponentSuite)
+
+	suite.AddDependency(t, "vpc-flow-logs-bucket", "default-test", nil)
+
 	helper.Run(t, suite)
 }

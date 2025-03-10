@@ -1,5 +1,6 @@
 import:
   - orgs/default/test/_defaults
+  - catalog/usecase/vpc_flow_logs_bucket
   - catalog/usecase/disabled
   - catalog/usecase/private
   - catalog/usecase/public

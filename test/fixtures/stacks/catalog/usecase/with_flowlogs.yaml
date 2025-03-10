@@ -1,16 +1,5 @@
 components:
   terraform:
-    vpc-flow-logs-bucket:
-      metadata:
-        component: vpc-flow-logs-bucket
-      vars:
-        name: "vpc-flow-logs-bucket"
-        noncurrent_version_expiration_days: 180
-        noncurrent_version_transition_days: 30
-        standard_transition_days: 60
-        glacier_transition_days: 180
-        expiration_days: 365
-
     vpc/with_flowlogs:
       metadata:
         component: target
@@ -25,4 +14,5 @@ components:
         max_subnet_count: 3
         vpc_flow_logs_enabled: true
         vpc_flow_logs_bucket_component_name: "vpc-flow-logs-bucket"
+        vpc_flow_logs_bucket_stage_name: "test"
         ipv4_primary_cidr_block: "172.16.0.0/16"
