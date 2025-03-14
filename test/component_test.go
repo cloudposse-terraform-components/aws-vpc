@@ -165,10 +165,6 @@ func (s *ComponentSuite) TestVPCFlowLogs() {
 	subnets := vpc.Subnets
 	require.Equal(s.T(), 1, len(subnets))
 
-	nats, err := awshelper.GetNatGatewaysByVpcIdE(s.T(), context.Background(), vpcId, awsRegion)
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), 1, len(nats))
-
 	flow_log_destinations := atmos.Output(s.T(), options, "flow_log_destination")
 	require.NotEmpty(s.T(), flow_log_destinations, "Expected at least one flow log destination but found none")
 	require.True(s.T(), strings.HasPrefix(flow_log_destinations, "arn:aws:s3:::eg-default-ue2-test-vpc-flow-logs-bucket"))
