@@ -128,3 +128,13 @@ output "az_public_subnets_map" {
   description = "Map of AZ names to list of public subnet IDs in the AZs"
   value       = module.subnets.az_public_subnets_map
 }
+
+output "flow_log_destination" {
+  description = "Destination bucket for VPC flow logs"
+  value       = local.log_destination
+}
+
+output "flow_log_id" {
+  description = "ID of the VPC flow log"
+  value       = try(aws_flow_log.default[*].id, "")
+}
