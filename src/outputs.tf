@@ -129,6 +129,11 @@ output "az_public_subnets_map" {
   value       = module.subnets.az_public_subnets_map
 }
 
+output "igw_id" {
+  description = "The ID of the Internet Gateway"
+  value       = module.vpc.igw_id
+}
+
 output "flow_log_destination" {
   description = "Destination bucket for VPC flow logs"
   value       = local.log_destination
