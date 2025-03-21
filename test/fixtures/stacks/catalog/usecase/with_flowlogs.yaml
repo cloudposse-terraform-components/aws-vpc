@@ -1,0 +1,20 @@
+components:
+  terraform:
+    vpc/with_flowlogs:
+      metadata:
+        component: target
+      vars:
+        name: "vpc-terraform"
+        availability_zones:
+          - "a"
+        public_subnets_enabled: false
+        nat_gateway_enabled: false
+        nat_instance_enabled: false
+        subnet_type_tag_key: "eg.cptest.co/subnet/type"
+        max_subnet_count: 3
+        vpc_flow_logs_enabled: true
+        vpc_flow_logs_bucket_component_name: "vpc-flow-logs-bucket"
+        vpc_flow_logs_bucket_stage_name: "test"
+        vpc_flow_logs_bucket_tenant_name: "default"
+        vpc_flow_logs_bucket_environment_name: "ue2"
+        ipv4_primary_cidr_block: "172.16.0.0/16"

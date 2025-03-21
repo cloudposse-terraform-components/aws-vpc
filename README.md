@@ -107,7 +107,7 @@ components:
 | <a name="module_utils"></a> [utils](#module\_utils) | cloudposse/utils/aws | 1.3.0 |
 | <a name="module_vpc"></a> [vpc](#module\_vpc) | cloudposse/vpc/aws | 2.1.0 |
 | <a name="module_vpc_endpoints"></a> [vpc\_endpoints](#module\_vpc\_endpoints) | cloudposse/vpc/aws//modules/vpc-endpoints | 2.1.0 |
-| <a name="module_vpc_flow_logs_bucket"></a> [vpc\_flow\_logs\_bucket](#module\_vpc\_flow\_logs\_bucket) | cloudposse/stack-config/yaml//modules/remote-state | 1.5.0 |
+| <a name="module_vpc_flow_logs_bucket"></a> [vpc\_flow\_logs\_bucket](#module\_vpc\_flow\_logs\_bucket) | cloudposse/stack-config/yaml//modules/remote-state | 1.8.0 |
 
 ## Resources
 
@@ -163,9 +163,13 @@ components:
 | <a name="input_subnets_per_az_names"></a> [subnets\_per\_az\_names](#input\_subnets\_per\_az\_names) | The subnet names of each type (public or private) to provision per Availability Zone.<br/>This variable is optional.<br/>If a list of names is provided, the list items will be used as keys in the outputs `named_private_subnets_map`, `named_public_subnets_map`,<br/>`named_private_route_table_ids_map` and `named_public_route_table_ids_map` | `list(string)` | <pre>[<br/>  "common"<br/>]</pre> | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Additional tags (e.g. `{'BusinessUnit': 'XYZ'}`).<br/>Neither the tag keys nor the tag values will be modified by this module. | `map(string)` | `{}` | no |
 | <a name="input_tenant"></a> [tenant](#input\_tenant) | ID element \_(Rarely used, not included by default)\_. A customer identifier, indicating who this instance of a resource is for | `string` | `null` | no |
+| <a name="input_vpc_flow_logs_bucket_component_name"></a> [vpc\_flow\_logs\_bucket\_component\_name](#input\_vpc\_flow\_logs\_bucket\_component\_name) | The name of the VPC flow logs bucket component | `string` | `"vpc-flow-logs-bucket"` | no |
 | <a name="input_vpc_flow_logs_bucket_environment_name"></a> [vpc\_flow\_logs\_bucket\_environment\_name](#input\_vpc\_flow\_logs\_bucket\_environment\_name) | The name of the environment where the VPC Flow Logs bucket is provisioned | `string` | `""` | no |
 | <a name="input_vpc_flow_logs_bucket_stage_name"></a> [vpc\_flow\_logs\_bucket\_stage\_name](#input\_vpc\_flow\_logs\_bucket\_stage\_name) | The stage (account) name where the VPC Flow Logs bucket is provisioned | `string` | `""` | no |
 | <a name="input_vpc_flow_logs_bucket_tenant_name"></a> [vpc\_flow\_logs\_bucket\_tenant\_name](#input\_vpc\_flow\_logs\_bucket\_tenant\_name) | The name of the tenant where the VPC Flow Logs bucket is provisioned.<br/><br/>If the `tenant` label is not used, leave this as `null`. | `string` | `null` | no |
+| <a name="input_vpc_flow_logs_destination_options_file_format"></a> [vpc\_flow\_logs\_destination\_options\_file\_format](#input\_vpc\_flow\_logs\_destination\_options\_file\_format) | VPC Flow Logs file format | `string` | `"parquet"` | no |
+| <a name="input_vpc_flow_logs_destination_options_hive_compatible_partitions"></a> [vpc\_flow\_logs\_destination\_options\_hive\_compatible\_partitions](#input\_vpc\_flow\_logs\_destination\_options\_hive\_compatible\_partitions) | Flag to enable/disable VPC Flow Logs hive compatible partitions | `bool` | `false` | no |
+| <a name="input_vpc_flow_logs_destination_options_per_hour_partition"></a> [vpc\_flow\_logs\_destination\_options\_per\_hour\_partition](#input\_vpc\_flow\_logs\_destination\_options\_per\_hour\_partition) | Flag to enable/disable VPC Flow Logs per hour partition | `bool` | `false` | no |
 | <a name="input_vpc_flow_logs_enabled"></a> [vpc\_flow\_logs\_enabled](#input\_vpc\_flow\_logs\_enabled) | Enable or disable the VPC Flow Logs | `bool` | `true` | no |
 | <a name="input_vpc_flow_logs_log_destination_type"></a> [vpc\_flow\_logs\_log\_destination\_type](#input\_vpc\_flow\_logs\_log\_destination\_type) | The type of the logging destination. Valid values: `cloud-watch-logs`, `s3` | `string` | `"s3"` | no |
 | <a name="input_vpc_flow_logs_traffic_type"></a> [vpc\_flow\_logs\_traffic\_type](#input\_vpc\_flow\_logs\_traffic\_type) | The type of traffic to capture. Valid values: `ACCEPT`, `REJECT`, `ALL` | `string` | `"ALL"` | no |
@@ -177,6 +181,8 @@ components:
 | <a name="output_availability_zones"></a> [availability\_zones](#output\_availability\_zones) | List of Availability Zones where subnets were created |
 | <a name="output_az_private_subnets_map"></a> [az\_private\_subnets\_map](#output\_az\_private\_subnets\_map) | Map of AZ names to list of private subnet IDs in the AZs |
 | <a name="output_az_public_subnets_map"></a> [az\_public\_subnets\_map](#output\_az\_public\_subnets\_map) | Map of AZ names to list of public subnet IDs in the AZs |
+| <a name="output_flow_log_destination"></a> [flow\_log\_destination](#output\_flow\_log\_destination) | Destination bucket for VPC flow logs |
+| <a name="output_flow_log_id"></a> [flow\_log\_id](#output\_flow\_log\_id) | ID of the VPC flow log |
 | <a name="output_interface_vpc_endpoints"></a> [interface\_vpc\_endpoints](#output\_interface\_vpc\_endpoints) | List of Interface VPC Endpoints in this VPC. |
 | <a name="output_max_subnet_count"></a> [max\_subnet\_count](#output\_max\_subnet\_count) | Maximum allowed number of subnets before all subnet CIDRs need to be recomputed |
 | <a name="output_nat_eip_protections"></a> [nat\_eip\_protections](#output\_nat\_eip\_protections) | List of AWS Shield Advanced Protections for NAT Elastic IPs. |
