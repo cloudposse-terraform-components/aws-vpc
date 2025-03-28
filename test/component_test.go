@@ -27,6 +27,11 @@ func (s *ComponentSuite) TestPrivateVPC() {
 	options, _ := s.DeployAtmosComponent(s.T(), component, stack, nil)
 	cidrBlock := atmos.Output(s.T(), options, "vpc_cidr")
 
+	// Ensure S3 bucket is empty before destroy
+	vpcFlowLogsBucketOptions := s.GetAtmosOptions("vpc-flow-logs-bucket", stack, nil)
+	bucketName := atmos.Output(s.T(), vpcFlowLogsBucketOptions, "vpc_flow_logs_bucket_id")
+	defer aws.EmptyS3Bucket(s.T(), awsRegion, bucketName)
+
 	assert.Equal(s.T(), "172.16.0.0/16", cidrBlock)
 
 	vpcId := atmos.Output(s.T(), options, "vpc_id")
@@ -76,6 +81,12 @@ func (s *ComponentSuite) TestPublicVPC() {
 	defer s.DestroyAtmosComponent(s.T(), component, stack, nil)
 	options, _ := s.DeployAtmosComponent(s.T(), component, stack, nil)
 	cidrBlock := atmos.Output(s.T(), options, "vpc_cidr")
+
+	// Ensure S3 bucket is empty before destroy
+	vpcFlowLogsBucketOptions := s.GetAtmosOptions("vpc-flow-logs-bucket", stack, nil)
+	bucketName := atmos.Output(s.T(), vpcFlowLogsBucketOptions, "vpc_flow_logs_bucket_id")
+	defer aws.EmptyS3Bucket(s.T(), awsRegion, bucketName)
+
 	assert.Equal(s.T(), "172.16.0.0/16", cidrBlock)
 
 	vpcId := atmos.Output(s.T(), options, "vpc_id")
@@ -120,6 +131,51 @@ func (s *ComponentSuite) TestPublicVPC() {
 	s.DriftTest(component, stack, nil)
 }
 
+func (s *ComponentSuite) TestVPCFlowLogs() {
+	const component = "vpc/with_flowlogs"
+	const stack = "default-test"
+	const awsRegion = "us-east-2"
+
+	defer s.DestroyAtmosComponent(s.T(), component, stack, nil)
+
+	// Ensure S3 bucket is empty before destroy
+	vpcFlowLogsBucketOptions := s.GetAtmosOptions("vpc-flow-logs-bucket", stack, nil)
+	bucketName := atmos.Output(s.T(), vpcFlowLogsBucketOptions, "vpc_flow_logs_bucket_id")
+	defer aws.EmptyS3Bucket(s.T(), awsRegion, bucketName)
+
+	options, _ := s.DeployAtmosComponent(s.T(), component, stack, nil)
+
+	cidrBlock := atmos.Output(s.T(), options, "vpc_cidr")
+	assert.Equal(s.T(), "172.16.0.0/16", cidrBlock)
+
+	vpcId := atmos.Output(s.T(), options, "vpc_id")
+	require.True(s.T(), strings.HasPrefix(vpcId, "vpc-"))
+
+	vpc := aws.GetVpcById(s.T(), vpcId, awsRegion)
+
+	assert.Equal(s.T(), vpc.Name, fmt.Sprintf("eg-default-ue2-test-vpc-terraform-%s", s.Config.RandomIdentifier))
+	assert.Equal(s.T(), *vpc.CidrAssociations[0], "172.16.0.0/16")
+	assert.Equal(s.T(), *vpc.CidrBlock, "172.16.0.0/16")
+	assert.Nil(s.T(), vpc.Ipv6CidrAssociations)
+	assert.Equal(s.T(), vpc.Tags["Environment"], "ue2")
+	assert.Equal(s.T(), vpc.Tags["Namespace"], "eg")
+	assert.Equal(s.T(), vpc.Tags["Stage"], "test")
+	assert.Equal(s.T(), vpc.Tags["Tenant"], "default")
+
+	subnets := vpc.Subnets
+	require.Equal(s.T(), 1, len(subnets))
+
+	flow_log_destinations := atmos.Output(s.T(), options, "flow_log_destination")
+	require.NotEmpty(s.T(), flow_log_destinations, "Expected at least one flow log destination but found none")
+	require.True(s.T(), strings.HasPrefix(flow_log_destinations, "arn:aws:s3:::eg-default-ue2-test-vpc-flow-logs-bucket"))
+
+	flow_log_ids := atmos.OutputList(s.T(), options, "flow_log_id")
+	require.NotEmpty(s.T(), flow_log_ids, "Expected at least one flow log ID but found none")
+	require.True(s.T(), strings.HasPrefix(flow_log_ids[0], "fl-"), "Flow log ID does not match expected format")
+
+	s.DriftTest(component, stack, nil)
+}
+
 func (s *ComponentSuite) TestEnabledFlag() {
 	const component = "vpc/disabled"
 	const stack = "default-test"
@@ -128,5 +184,7 @@ func (s *ComponentSuite) TestEnabledFlag() {
 
 func TestRunVPCSuite(t *testing.T) {
 	suite := new(ComponentSuite)
+
+	suite.AddDependency(t, "vpc-flow-logs-bucket", "default-test", nil)
 	helper.Run(t, suite)
 }

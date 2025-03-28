@@ -107,7 +107,7 @@ components:
 | <a name="module_utils"></a> [utils](#module\_utils) | cloudposse/utils/aws | 1.3.0 |
 | <a name="module_vpc"></a> [vpc](#module\_vpc) | cloudposse/vpc/aws | 2.1.0 |
 | <a name="module_vpc_endpoints"></a> [vpc\_endpoints](#module\_vpc\_endpoints) | cloudposse/vpc/aws//modules/vpc-endpoints | 2.1.0 |
-| <a name="module_vpc_flow_logs_bucket"></a> [vpc\_flow\_logs\_bucket](#module\_vpc\_flow\_logs\_bucket) | cloudposse/stack-config/yaml//modules/remote-state | 1.5.0 |
+| <a name="module_vpc_flow_logs_bucket"></a> [vpc\_flow\_logs\_bucket](#module\_vpc\_flow\_logs\_bucket) | cloudposse/stack-config/yaml//modules/remote-state | 1.8.0 |
 
 ## Resources
 
@@ -181,6 +181,9 @@ components:
 | <a name="output_availability_zones"></a> [availability\_zones](#output\_availability\_zones) | List of Availability Zones where subnets were created |
 | <a name="output_az_private_subnets_map"></a> [az\_private\_subnets\_map](#output\_az\_private\_subnets\_map) | Map of AZ names to list of private subnet IDs in the AZs |
 | <a name="output_az_public_subnets_map"></a> [az\_public\_subnets\_map](#output\_az\_public\_subnets\_map) | Map of AZ names to list of public subnet IDs in the AZs |
+| <a name="output_flow_log_destination"></a> [flow\_log\_destination](#output\_flow\_log\_destination) | Destination bucket for VPC flow logs |
+| <a name="output_flow_log_id"></a> [flow\_log\_id](#output\_flow\_log\_id) | ID of the VPC flow log |
+| <a name="output_igw_id"></a> [igw\_id](#output\_igw\_id) | The ID of the Internet Gateway |
 | <a name="output_interface_vpc_endpoints"></a> [interface\_vpc\_endpoints](#output\_interface\_vpc\_endpoints) | List of Interface VPC Endpoints in this VPC. |
 | <a name="output_max_subnet_count"></a> [max\_subnet\_count](#output\_max\_subnet\_count) | Maximum allowed number of subnets before all subnet CIDRs need to be recomputed |
 | <a name="output_nat_eip_protections"></a> [nat\_eip\_protections](#output\_nat\_eip\_protections) | List of AWS Shield Advanced Protections for NAT Elastic IPs. |
