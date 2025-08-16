@@ -46,7 +46,10 @@ locals {
   gateway_endpoint_map = { for v in var.gateway_vpc_endpoints : v => {
     name            = v
     policy          = null
-    route_table_ids = module.subnets.private_route_table_ids
+    
+    # If var.vpc_endpoints_subnet_name is empty, fallback to the previous behaviour of provisioning the 
+    # endpoints on all private subnets. If a subnet name is provided, use it as index into the named private subnets map
+    route_table_ids = var.vpc_endpoints_subnet_name == "" ? module.subnets.private_route_table_ids : module.subnets.named_private_route_table_ids_map[var.vpc_endpoints_subnet_name]
   } }
 
   # If we use a separate security group for each endpoint interface,
@@ -61,7 +64,10 @@ locals {
     policy              = null
     private_dns_enabled = true # Allow applications to use normal service DNS names to access the service
     security_group_ids  = [module.endpoint_security_groups[local.interface_endpoint_security_group_key].id]
-    subnet_ids          = module.subnets.private_subnet_ids
+    
+    # If var.vpc_endpoints_subnet_name is empty, fallback to the previous behaviour of provisioning the 
+    # endpoints on all private subnets. If a subnet name is provided, use it as index into the named private subnets map
+    subnet_ids          = var.vpc_endpoints_subnet_name == "" ? module.subnets.private_subnet_ids : module.subnets.named_private_subnets_map[var.vpc_endpoints_subnet_name]
   } }
 }
 
