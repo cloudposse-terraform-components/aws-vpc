@@ -218,6 +218,16 @@ variable "interface_vpc_endpoints" {
   default     = []
 }
 
+variable "vpc_endpoints_subnet_name" {
+  type        = string
+  description = <<-EOT
+    The name of the subnet from the `subnets_per_az_names` in which to create Interface and Gateway VPC endpoints.
+    If `vpc_endpoints_subnet_name` is not provided, Interface and Gateway VPC endpoints will be created in all private route tables.
+  EOT
+  default     = ""
+  nullable    = false
+}
+
 variable "subnets_per_az_count" {
   type        = number
   description = <<-EOT
