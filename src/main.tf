@@ -48,7 +48,7 @@ locals {
     policy          = null
     
     # If var.vpc_endpoints_subnet_name is empty, fallback to the previous behaviour of provisioning the 
-    # endpoints on all private subnets. If a subnet name is provided, use it as index into the named private subnets map
+    # endpoints on all private subnets. If a subnet name is provided, use it as index into the named private subnets route table map
     route_table_ids = var.vpc_endpoints_subnet_name == "" ? module.subnets.private_route_table_ids : module.subnets.named_private_route_table_ids_map[var.vpc_endpoints_subnet_name]
   } }
 
