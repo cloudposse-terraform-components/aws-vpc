@@ -7,10 +7,9 @@ tags:
 
 # Component: `vpc`
 
-This component is responsible for provisioning a VPC and corresponding Subnets. Additionally, VPC Flow Logs can
-optionally be enabled for auditing purposes. See the existing VPC configuration documentation for the provisioned
-subnets.
-
+This component is responsible for provisioning a VPC and corresponding Subnets.
+Additionally, VPC Flow Logs can optionally be enabled for auditing purposes.
+See the existing VPC configuration documentation for the provisioned subnets.
 ## Usage
 
 **Stack Level**: Regional
@@ -61,8 +60,8 @@ components:
         ipv4_primary_cidr_block: "10.111.0.0/18"
 ```
 
-<!-- prettier-ignore-start -->
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+
+<!-- markdownlint-disable -->
 ## Requirements
 
 | Name | Version |
@@ -183,12 +182,17 @@ components:
 | <a name="output_vpc_default_network_acl_id"></a> [vpc\_default\_network\_acl\_id](#output\_vpc\_default\_network\_acl\_id) | The ID of the network ACL created by default on VPC creation |
 | <a name="output_vpc_default_security_group_id"></a> [vpc\_default\_security\_group\_id](#output\_vpc\_default\_security\_group\_id) | The ID of the security group created by default on VPC creation |
 | <a name="output_vpc_id"></a> [vpc\_id](#output\_vpc\_id) | VPC ID |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-<!-- prettier-ignore-end -->
+<!-- markdownlint-restore -->
+
+
 
 ## References
 
-- [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/main/modules/vpc) -
-  Cloud Posse's upstream component
+
+- [cloudposse/terraform-aws-components (vpc)](https://github.com/cloudposse/terraform-aws-components/tree/main/modules/vpc) - Cloud Posse's upstream component
+
+
+
 
 [<img src="https://cloudposse.com/logo-300x69.svg" height="32" align="right"/>](https://cpco.io/homepage?utm_source=github&utm_medium=readme&utm_campaign=cloudposse-terraform-components/aws-vpc&utm_content=)
+
