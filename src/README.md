@@ -189,7 +189,7 @@ components:
 ## References
 
 
-- [cloudposse/terraform-aws-components (vpc)](https://github.com/cloudposse/terraform-aws-components/tree/main/modules/vpc) - Cloud Posse's upstream component
+- [cloudposse-terraform-components](https://github.com/orgs/cloudposse-terraform-components/repositories) - Cloud Posse's upstream component
 
 
 
