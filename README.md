@@ -217,6 +217,8 @@ components:
 | <a name="output_igw_id"></a> [igw\_id](#output\_igw\_id) | The ID of the Internet Gateway |
 | <a name="output_interface_vpc_endpoints"></a> [interface\_vpc\_endpoints](#output\_interface\_vpc\_endpoints) | List of Interface VPC Endpoints in this VPC. |
 | <a name="output_max_subnet_count"></a> [max\_subnet\_count](#output\_max\_subnet\_count) | Maximum allowed number of subnets before all subnet CIDRs need to be recomputed |
+| <a name="output_named_route_tables"></a> [named\_route\_tables](#output\_named\_route\_tables) | Map of route table IDs, keyed by subnets\_per\_az\_names.<br/>If subnets\_per\_az\_names is not set, items are grouped by key 'common' |
+| <a name="output_named_subnets"></a> [named\_subnets](#output\_named\_subnets) | Map of subnets IDs, keyed by subnets\_per\_az\_names.<br/>If subnets\_per\_az\_names is not set, items are grouped by key 'common' |
 | <a name="output_nat_eip_protections"></a> [nat\_eip\_protections](#output\_nat\_eip\_protections) | List of AWS Shield Advanced Protections for NAT Elastic IPs. |
 | <a name="output_nat_gateway_ids"></a> [nat\_gateway\_ids](#output\_nat\_gateway\_ids) | NAT Gateway IDs |
 | <a name="output_nat_gateway_public_ips"></a> [nat\_gateway\_public\_ips](#output\_nat\_gateway\_public\_ips) | NAT Gateway public IPs |
