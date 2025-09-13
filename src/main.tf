@@ -72,7 +72,7 @@ module "utils" {
 
 module "vpc" {
   source  = "cloudposse/vpc/aws"
-  version = "2.3.0"
+  version = "3.0.0"
 
   ipv4_primary_cidr_block          = var.ipv4_primary_cidr_block
   internet_gateway_enabled         = var.public_subnets_enabled
@@ -126,7 +126,7 @@ module "endpoint_security_groups" {
 
 module "vpc_endpoints" {
   source  = "cloudposse/vpc/aws//modules/vpc-endpoints"
-  version = "2.3.0"
+  version = "3.0.0"
 
   enabled = local.enabled && (length(var.interface_vpc_endpoints) + length(var.gateway_vpc_endpoints)) > 0
 
