@@ -144,6 +144,36 @@ output "interface_vpc_endpoints" {
   value       = try(module.vpc_endpoints[0].interface_vpc_endpoints, [])
 }
 
+output "gateway_vpc_endpoints" {
+  description = "Map of Gateway VPC Endpoints in this VPC, keyed by service (e.g. \"s3\")."
+  value       = try(module.vpc_endpoints[0].gateway_vpc_endpoints, {})
+}
+
+output "vpc_endpoint_s3_prefix_list_id" {
+  description = "Prefix list ID for S3 gateway endpoint"
+  value       = try(module.vpc_endpoints[0].gateway_vpc_endpoints["s3"]["prefix_list_id"], null)
+}
+
+output "vpc_endpoint_s3_id" {
+  description = "ID of the S3 gateway endpoint"
+  value       = try(module.vpc_endpoints[0].gateway_vpc_endpoints["s3"]["id"], null)
+}
+
+output "vpc_endpoint_dynamodb_prefix_list_id" {
+  description = "Prefix list ID for DynamoDB gateway endpoint"
+  value       = try(module.vpc_endpoints[0].gateway_vpc_endpoints["dynamodb"]["prefix_list_id"], null)
+}
+
+output "vpc_endpoint_dynamodb_id" {
+  description = "ID of the DynamoDB gateway endpoint"
+  value       = try(module.vpc_endpoints[0].gateway_vpc_endpoints["dynamodb"]["id"], null)
+}
+
+output "vpc_endpoint_interface_security_group_id" {
+  description = "Security group ID for interface VPC endpoints"
+  value       = try(module.endpoint_security_groups[local.interface_endpoint_security_group_key].id, null)
+}
+
 output "availability_zones" {
   description = "List of Availability Zones where subnets were created"
   value       = module.subnets.availability_zones
