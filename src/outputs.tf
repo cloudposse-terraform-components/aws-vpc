@@ -145,8 +145,8 @@ output "interface_vpc_endpoints" {
 }
 
 output "gateway_vpc_endpoints" {
-  description = "List of Gateway VPC Endpoints in this VPC."
-  value       = try(module.vpc_endpoints[0].gateway_vpc_endpoints, [])
+  description = "Map of Gateway VPC Endpoints in this VPC, keyed by service (e.g. \"s3\")."
+  value       = try(module.vpc_endpoints[0].gateway_vpc_endpoints, {})
 }
 
 output "vpc_endpoint_s3_prefix_list_id" {
