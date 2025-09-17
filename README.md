@@ -214,6 +214,7 @@ components:
 | <a name="output_az_public_subnets_map"></a> [az\_public\_subnets\_map](#output\_az\_public\_subnets\_map) | Map of AZ names to list of public subnet IDs in the AZs |
 | <a name="output_flow_log_destination"></a> [flow\_log\_destination](#output\_flow\_log\_destination) | Destination bucket for VPC flow logs |
 | <a name="output_flow_log_id"></a> [flow\_log\_id](#output\_flow\_log\_id) | ID of the VPC flow log |
+| <a name="output_gateway_vpc_endpoints"></a> [gateway\_vpc\_endpoints](#output\_gateway\_vpc\_endpoints) | Map of Gateway VPC Endpoints in this VPC, keyed by service (e.g. "s3"). |
 | <a name="output_igw_id"></a> [igw\_id](#output\_igw\_id) | The ID of the Internet Gateway |
 | <a name="output_interface_vpc_endpoints"></a> [interface\_vpc\_endpoints](#output\_interface\_vpc\_endpoints) | List of Interface VPC Endpoints in this VPC. |
 | <a name="output_max_subnet_count"></a> [max\_subnet\_count](#output\_max\_subnet\_count) | Maximum allowed number of subnets before all subnet CIDRs need to be recomputed |
@@ -235,6 +236,11 @@ components:
 | <a name="output_vpc_cidr"></a> [vpc\_cidr](#output\_vpc\_cidr) | VPC CIDR |
 | <a name="output_vpc_default_network_acl_id"></a> [vpc\_default\_network\_acl\_id](#output\_vpc\_default\_network\_acl\_id) | The ID of the network ACL created by default on VPC creation |
 | <a name="output_vpc_default_security_group_id"></a> [vpc\_default\_security\_group\_id](#output\_vpc\_default\_security\_group\_id) | The ID of the security group created by default on VPC creation |
+| <a name="output_vpc_endpoint_dynamodb_id"></a> [vpc\_endpoint\_dynamodb\_id](#output\_vpc\_endpoint\_dynamodb\_id) | ID of the DynamoDB gateway endpoint |
+| <a name="output_vpc_endpoint_dynamodb_prefix_list_id"></a> [vpc\_endpoint\_dynamodb\_prefix\_list\_id](#output\_vpc\_endpoint\_dynamodb\_prefix\_list\_id) | Prefix list ID for DynamoDB gateway endpoint |
+| <a name="output_vpc_endpoint_interface_security_group_id"></a> [vpc\_endpoint\_interface\_security\_group\_id](#output\_vpc\_endpoint\_interface\_security\_group\_id) | Security group ID for interface VPC endpoints |
+| <a name="output_vpc_endpoint_s3_id"></a> [vpc\_endpoint\_s3\_id](#output\_vpc\_endpoint\_s3\_id) | ID of the S3 gateway endpoint |
+| <a name="output_vpc_endpoint_s3_prefix_list_id"></a> [vpc\_endpoint\_s3\_prefix\_list\_id](#output\_vpc\_endpoint\_s3\_prefix\_list\_id) | Prefix list ID for S3 gateway endpoint |
 | <a name="output_vpc_id"></a> [vpc\_id](#output\_vpc\_id) | VPC ID |
 <!-- markdownlint-restore -->
 
