@@ -176,6 +176,61 @@ func (s *ComponentSuite) TestVPCFlowLogs() {
 	s.DriftTest(component, stack, nil)
 }
 
+func (s *ComponentSuite) TestVPCWithEndpoints() {
+	const component = "vpc/with_endpoints"
+	const stack = "default-test"
+	const awsRegion = "us-east-2"
+
+	defer s.DestroyAtmosComponent(s.T(), component, stack, nil)
+	options, _ := s.DeployAtmosComponent(s.T(), component, stack, nil)
+
+	// Ensure S3 bucket is empty before destroy
+	vpcFlowLogsBucketOptions := s.GetAtmosOptions("vpc-flow-logs-bucket", stack, nil)
+	bucketName := atmos.Output(s.T(), vpcFlowLogsBucketOptions, "vpc_flow_logs_bucket_id")
+	defer aws.EmptyS3Bucket(s.T(), awsRegion, bucketName)
+
+	// Test basic VPC properties
+	cidrBlock := atmos.Output(s.T(), options, "vpc_cidr")
+	assert.Equal(s.T(), "172.16.0.0/16", cidrBlock)
+
+	vpcId := atmos.Output(s.T(), options, "vpc_id")
+	require.True(s.T(), strings.HasPrefix(vpcId, "vpc-"))
+
+	// Test Gateway VPC Endpoints outputs
+	gatewayEndpoints := atmos.OutputMap(s.T(), options, "gateway_vpc_endpoints")
+	assert.NotEmpty(s.T(), gatewayEndpoints, "Gateway VPC endpoints should not be empty")
+
+	// Check S3 gateway endpoint
+	s3EndpointId := atmos.Output(s.T(), options, "vpc_endpoint_s3_id")
+	assert.NotEmpty(s.T(), s3EndpointId, "S3 endpoint ID should not be empty")
+	assert.True(s.T(), strings.HasPrefix(s3EndpointId, "vpce-"), "S3 endpoint ID should have correct format")
+
+	s3PrefixListId := atmos.Output(s.T(), options, "vpc_endpoint_s3_prefix_list_id")
+	assert.NotEmpty(s.T(), s3PrefixListId, "S3 prefix list ID should not be empty")
+	assert.True(s.T(), strings.HasPrefix(s3PrefixListId, "pl-"), "S3 prefix list ID should have correct format")
+
+	// Check DynamoDB gateway endpoint
+	dynamodbEndpointId := atmos.Output(s.T(), options, "vpc_endpoint_dynamodb_id")
+	assert.NotEmpty(s.T(), dynamodbEndpointId, "DynamoDB endpoint ID should not be empty")
+	assert.True(s.T(), strings.HasPrefix(dynamodbEndpointId, "vpce-"), "DynamoDB endpoint ID should have correct format")
+
+	dynamodbPrefixListId := atmos.Output(s.T(), options, "vpc_endpoint_dynamodb_prefix_list_id")
+	assert.NotEmpty(s.T(), dynamodbPrefixListId, "DynamoDB prefix list ID should not be empty")
+	assert.True(s.T(), strings.HasPrefix(dynamodbPrefixListId, "pl-"), "DynamoDB prefix list ID should have correct format")
+
+	// Test Interface VPC Endpoints outputs
+	interfaceEndpoints := atmos.OutputList(s.T(), options, "interface_vpc_endpoints")
+	assert.NotEmpty(s.T(), interfaceEndpoints, "Interface VPC endpoints should not be empty")
+	assert.Equal(s.T(), 2, len(interfaceEndpoints), "Should have 2 interface endpoints (ec2 and ssm)")
+
+	// Test interface endpoint security group
+	interfaceSecurityGroupId := atmos.Output(s.T(), options, "vpc_endpoint_interface_security_group_id")
+	assert.NotEmpty(s.T(), interfaceSecurityGroupId, "Interface endpoint security group ID should not be empty")
+	assert.True(s.T(), strings.HasPrefix(interfaceSecurityGroupId, "sg-"), "Security group ID should have correct format")
+
+	s.DriftTest(component, stack, nil)
+}
+
 func (s *ComponentSuite) TestEnabledFlag() {
 	const component = "vpc/disabled"
 	const stack = "default-test"
