@@ -141,32 +141,32 @@ output "nat_eip_protections" {
 
 output "interface_vpc_endpoints" {
   description = "List of Interface VPC Endpoints in this VPC."
-  value       = try(module.vpc_endpoints.interface_vpc_endpoints, [])
+  value       = try(module.vpc_endpoints.interface_vpc_endpoints_map, [])
 }
 
 output "gateway_vpc_endpoints" {
   description = "Map of Gateway VPC Endpoints in this VPC, keyed by service (e.g. \"s3\")."
-  value       = try(module.vpc_endpoints.gateway_vpc_endpoints, {})
+  value       = try(module.vpc_endpoints.gateway_vpc_endpoints_map, {})
 }
 
 output "vpc_endpoint_s3_prefix_list_id" {
   description = "Prefix list ID for S3 gateway endpoint"
-  value       = try(module.vpc_endpoints.gateway_vpc_endpoints["s3"]["prefix_list_id"], null)
+  value       = try(module.vpc_endpoints.gateway_vpc_endpoints_map["s3"]["prefix_list_id"], null)
 }
 
 output "vpc_endpoint_s3_id" {
   description = "ID of the S3 gateway endpoint"
-  value       = try(module.vpc_endpoints.gateway_vpc_endpoints["s3"]["id"], null)
+  value       = try(module.vpc_endpoints.gateway_vpc_endpoints_map["s3"]["id"], null)
 }
 
 output "vpc_endpoint_dynamodb_prefix_list_id" {
   description = "Prefix list ID for DynamoDB gateway endpoint"
-  value       = try(module.vpc_endpoints.gateway_vpc_endpoints["dynamodb"]["prefix_list_id"], null)
+  value       = try(module.vpc_endpoints.gateway_vpc_endpoints_map["dynamodb"]["prefix_list_id"], null)
 }
 
 output "vpc_endpoint_dynamodb_id" {
   description = "ID of the DynamoDB gateway endpoint"
-  value       = try(module.vpc_endpoints.gateway_vpc_endpoints["dynamodb"]["id"], null)
+  value       = try(module.vpc_endpoints.gateway_vpc_endpoints_map["dynamodb"]["id"], null)
 }
 
 output "vpc_endpoint_interface_security_group_id" {
