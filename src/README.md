@@ -164,7 +164,7 @@ components:
 | <a name="output_flow_log_id"></a> [flow\_log\_id](#output\_flow\_log\_id) | ID of the VPC flow log |
 | <a name="output_gateway_vpc_endpoints"></a> [gateway\_vpc\_endpoints](#output\_gateway\_vpc\_endpoints) | Map of Gateway VPC Endpoints in this VPC, keyed by service (e.g. "s3"). |
 | <a name="output_igw_id"></a> [igw\_id](#output\_igw\_id) | The ID of the Internet Gateway |
-| <a name="output_interface_vpc_endpoints"></a> [interface\_vpc\_endpoints](#output\_interface\_vpc\_endpoints) | List of Interface VPC Endpoints in this VPC. |
+| <a name="output_interface_vpc_endpoints"></a> [interface\_vpc\_endpoints](#output\_interface\_vpc\_endpoints) | Map of Interface VPC Endpoints in this VPC. |
 | <a name="output_max_subnet_count"></a> [max\_subnet\_count](#output\_max\_subnet\_count) | Maximum allowed number of subnets before all subnet CIDRs need to be recomputed |
 | <a name="output_named_route_tables"></a> [named\_route\_tables](#output\_named\_route\_tables) | Map of route table IDs, keyed by subnets\_per\_az\_names.<br/>If subnets\_per\_az\_names is not set, items are grouped by key 'common' |
 | <a name="output_named_subnets"></a> [named\_subnets](#output\_named\_subnets) | Map of subnets IDs, keyed by subnets\_per\_az\_names.<br/>If subnets\_per\_az\_names is not set, items are grouped by key 'common' |
