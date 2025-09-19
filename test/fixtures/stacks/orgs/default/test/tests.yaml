@@ -5,4 +5,5 @@ import:
   - catalog/usecase/private
   - catalog/usecase/public
   - catalog/usecase/with_flowlogs
+  - catalog/usecase/with_endpoints
 #  - catalog/usecase/with_ipam
