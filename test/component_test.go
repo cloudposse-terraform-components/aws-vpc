@@ -219,7 +219,7 @@ func (s *ComponentSuite) TestVPCWithEndpoints() {
 	assert.True(s.T(), strings.HasPrefix(dynamodbPrefixListId, "pl-"), "DynamoDB prefix list ID should have correct format")
 
 	// Test Interface VPC Endpoints outputs
-	interfaceEndpoints := atmos.OutputList(s.T(), options, "interface_vpc_endpoints")
+	interfaceEndpoints := atmos.OutputMap(s.T(), options, "interface_vpc_endpoints")
 	assert.NotEmpty(s.T(), interfaceEndpoints, "Interface VPC endpoints should not be empty")
 	assert.Equal(s.T(), 2, len(interfaceEndpoints), "Should have 2 interface endpoints (ec2 and ssm)")
 
