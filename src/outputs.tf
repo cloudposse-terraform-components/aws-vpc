@@ -140,7 +140,7 @@ output "nat_eip_protections" {
 }
 
 output "interface_vpc_endpoints" {
-  description = "List of Interface VPC Endpoints in this VPC."
+  description = "Map of Interface VPC Endpoints in this VPC."
   value       = try(module.vpc_endpoints.interface_vpc_endpoints_map, [])
 }
 
