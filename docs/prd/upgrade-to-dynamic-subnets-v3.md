@@ -469,9 +469,11 @@ assert.True(s.T(), strings.HasPrefix(vpcID, "vpc-"), "VPC ID should have 'vpc-' 
 ✅ **TestVPCWithEndpoints** - Tests Gateway and Interface endpoints
 ✅ **TestEnabledFlag** - Tests enabled/disabled flag functionality
 
-### Recommended Future Tests (v3.0.0 Features)
+### Recommended Tests for Full v3.0.0 Coverage
 
-The following tests should be added to validate new v3.0.0 features:
+**Status:** Recommended but not blocking for merge
+
+The following tests are recommended to validate new v3.0.0 features. While current tests provide adequate coverage of core functionality, these additional tests would provide comprehensive validation of the new NAT placement and separate subnet configuration features:
 
 #### 1. Separate Subnet Counts Test
 
@@ -586,19 +588,40 @@ go test -v -timeout 30m -cover
 
 ## Backward Compatibility
 
-### Guaranteed Compatibility
+### ⚠️ Breaking Change: AWS Provider Version Requirement
 
-✅ **All existing configurations work unchanged**
+**IMPORTANT:** This upgrade requires AWS Provider v5.0 or later. This is a breaking change for users currently on AWS Provider v4.x.
 
-The upgrade maintains 100% backward compatibility:
+**Breaking Change Details:**
+- **Previous requirement**: AWS Provider `>= 4.9.0, < 6.0.0`
+- **New requirement**: AWS Provider `>= 5.0.0`
+- **Impact**: Users on AWS Provider v4.x (v4.9.0 through v4.99.x) **cannot upgrade** without first upgrading their AWS Provider to v5.0+
+
+**Migration Path for AWS Provider v4.x Users:**
+1. Upgrade AWS Provider to v5.0+ in your Terraform configuration
+2. Review AWS Provider v5.0 [migration guide](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/guides/version-5-upgrade) for any breaking changes
+3. Test the provider upgrade in a non-production environment first
+4. Then upgrade to this component version
+
+**Why this change?**
+- The `terraform-aws-dynamic-subnets` v3.0.0 module requires AWS Provider v5.0+
+- Enables support for AWS Provider v6.x and future versions
+- Provides access to latest AWS features and security fixes
+
+### Configuration Compatibility
+
+✅ **All existing Terraform configurations work unchanged** (assuming AWS Provider v5.0+)
+
+The upgrade maintains 100% backward compatibility for Terraform configurations:
 
 1. **Legacy Variables**: `subnets_per_az_count` and `subnets_per_az_names` continue to work
 2. **Default Behavior**: When new variables are not set, behavior is identical to v2.4.2
-3. **No Breaking Changes**: No resources will be recreated for existing configurations
+3. **No Resource Changes**: No resources will be recreated for existing configurations
+4. **State Compatible**: No state migration required
 
 ### State Compatibility
 
-No state migration required. The upgrade can be applied directly to existing deployments.
+No state migration required. The upgrade can be applied directly to existing deployments (with AWS Provider v5.0+).
 
 ---
 
@@ -636,14 +659,14 @@ The module will fail at apply time with a clear error message if invalid names a
 
 1. ✅ Module upgraded to dynamic-subnets v3.0.0
 2. ✅ All 6 new variables added and documented
-3. ✅ AWS Provider version updated to v5.0+
+3. ✅ AWS Provider version updated to v5.0+ ⚠️ **BREAKING CHANGE** (drops v4.x support)
 4. ✅ Go and test dependencies updated to latest versions (Go 1.25, Terratest 0.52.0)
 5. ✅ Test code improved with helper functions and best practices
 6. ✅ Test cleanup bug fixed (S3 bucket cleanup order)
-7. ✅ README.yaml updated with comprehensive usage examples
+7. ✅ README.yaml updated with comprehensive usage examples and breaking change notice
 8. ✅ Cost optimization examples documented with real numbers
-9. ✅ Backward compatibility maintained (100%)
-10. ✅ Comprehensive PRD documentation created
+9. ✅ Configuration backward compatibility maintained (100% for Terraform configs on AWS Provider v5.0+)
+10. ✅ Comprehensive PRD documentation created with breaking change clearly documented
 
 ### Future Enhancements
 
