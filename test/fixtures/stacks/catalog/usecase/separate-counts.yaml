@@ -1,0 +1,23 @@
+components:
+  terraform:
+    vpc/separate-counts:
+      metadata:
+        component: target
+      vars:
+        name: "vpc-terraform"
+        availability_zones:
+          - "b"
+          - "c"
+        # Test different public vs private subnet counts per AZ
+        public_subnets_per_az_count: 2
+        public_subnets_per_az_names: ["loadbalancer", "web"]
+        private_subnets_per_az_count: 3
+        private_subnets_per_az_names: ["app", "database", "cache"]
+        # Place NAT in first public subnet
+        nat_gateway_public_subnet_indices: [0]
+        nat_gateway_enabled: true
+        nat_instance_enabled: false
+        subnet_type_tag_key: "eg.cptest.co/subnet/type"
+        max_subnet_count: 5
+        vpc_flow_logs_enabled: false
+        ipv4_primary_cidr_block: "172.16.0.0/16"

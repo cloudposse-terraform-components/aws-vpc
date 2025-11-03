@@ -463,88 +463,88 @@ assert.True(s.T(), strings.HasPrefix(vpcID, "vpc-"), "VPC ID should have 'vpc-' 
 
 ### Current Test Coverage
 
+#### Core Functionality Tests
 ✅ **TestPrivateVPC** - Tests VPC with only private subnets, no NAT
 ✅ **TestPublicVPC** - Tests VPC with public + private subnets, 1 NAT Gateway
 ✅ **TestVPCFlowLogs** - Tests Flow Logs integration with S3
 ✅ **TestVPCWithEndpoints** - Tests Gateway and Interface endpoints
 ✅ **TestEnabledFlag** - Tests enabled/disabled flag functionality
 
-### Recommended Tests for Full v3.0.0 Coverage
+#### v3.0.0 Feature Tests
+✅ **TestNATPlacementByIndex** - Tests index-based NAT Gateway placement (`nat_gateway_public_subnet_indices`)
+✅ **TestNATPlacementByName** - Tests name-based NAT Gateway placement (`nat_gateway_public_subnet_names`)
+✅ **TestSeparateSubnetCounts** - Tests separate public/private subnet counts per AZ
+✅ **TestValidationMutualExclusivity** - Tests validation failure when both NAT placement methods are set
 
-**Status:** Recommended but not blocking for merge
+### Test Coverage Details for v3.0.0 Features
 
-The following tests are recommended to validate new v3.0.0 features. While current tests provide adequate coverage of core functionality, these additional tests would provide comprehensive validation of the new NAT placement and separate subnet configuration features:
+#### 1. TestNATPlacementByIndex ✅
 
-#### 1. Separate Subnet Counts Test
+**Purpose:** Validates index-based NAT Gateway placement
 
-```go
-func (s *ComponentSuite) TestSeparateSubnetCounts() {
-    // Test with:
-    // - public_subnets_per_az_count: 2
-    // - private_subnets_per_az_count: 3
-
-    publicSubnetIDs := atmos.OutputList(s.T(), options, "public_subnet_ids")
-    assert.Equal(s.T(), 4, len(publicSubnetIDs), "Should have 2x2 AZs = 4 public subnets")
-
-    privateSubnetIDs := atmos.OutputList(s.T(), options, "private_subnet_ids")
-    assert.Equal(s.T(), 6, len(privateSubnetIDs), "Should have 3x2 AZs = 6 private subnets")
-}
-```
-
-**Stack file needed:**
+**Stack Configuration:** `test/fixtures/stacks/catalog/usecase/nat-by-index.yaml`
 ```yaml
-components:
-  terraform:
-    vpc/separate-counts:
-      vars:
-        public_subnets_per_az_count: 2
-        private_subnets_per_az_count: 3
+public_subnets_per_az_count: 2
+nat_gateway_public_subnet_indices: [0]  # NAT only in first public subnet
 ```
 
-#### 2. NAT Placement by Index Test
+**Test Validation:**
+- Verifies 4 public subnets created (2 per AZ × 2 AZs)
+- Verifies exactly 2 NAT Gateways created (1 per AZ, only at index 0)
+- Confirms NAT Gateways are in "available" state
+- Runs drift detection to ensure configuration stability
 
-```go
-func (s *ComponentSuite) TestNATPlacementByIndex() {
-    // Test with:
-    // - nat_gateway_public_subnet_indices: [0]
+#### 2. TestNATPlacementByName ✅
 
-    nats, _ := awshelper.GetNatGatewaysByVpcIdE(s.T(), context.Background(), vpcID, defaultRegion)
-    assert.Equal(s.T(), 2, len(nats), "Should have 1 NAT per AZ in 2 AZs = 2 NATs total")
+**Purpose:** Validates name-based NAT Gateway placement
 
-    // Validate NATs are only in first public subnet of each AZ
-}
+**Stack Configuration:** `test/fixtures/stacks/catalog/usecase/nat-by-name.yaml`
+```yaml
+public_subnets_per_az_names: ["nat", "web"]
+nat_gateway_public_subnet_names: ["nat"]  # NAT only in "nat" named subnets
 ```
 
-#### 3. NAT Placement by Name Test
+**Test Validation:**
+- Verifies 4 public subnets created with correct names
+- Verifies exactly 2 NAT Gateways created (only in "nat" subnets)
+- Validates named subnets output maps contain expected subnet names
+- Runs drift detection
 
-```go
-func (s *ComponentSuite) TestNATPlacementByName() {
-    // Test with:
-    // - public_subnets_per_az_names: ["loadbalancer", "web"]
-    // - nat_gateway_public_subnet_names: ["loadbalancer"]
+#### 3. TestSeparateSubnetCounts ✅
 
-    nats, _ := awshelper.GetNatGatewaysByVpcIdE(s.T(), context.Background(), vpcID, defaultRegion)
-    assert.Equal(s.T(), 2, len(nats), "Should have NAT only in 'loadbalancer' subnets")
-}
+**Purpose:** Validates different public vs private subnet counts per AZ
+
+**Stack Configuration:** `test/fixtures/stacks/catalog/usecase/separate-counts.yaml`
+```yaml
+public_subnets_per_az_count: 2
+private_subnets_per_az_count: 3
 ```
 
-#### 4. NAT Gateway ID Outputs Test
+**Test Validation:**
+- Verifies 4 public subnets (2 per AZ × 2 AZs)
+- Verifies 6 private subnets (3 per AZ × 2 AZs)
+- Validates total of 10 subnets in VPC
+- Confirms public subnets have IGW routes
+- Confirms private subnets do NOT have IGW routes
+- Runs drift detection
 
-```go
-func (s *ComponentSuite) TestNATGatewayIDOutputs() {
-    // Test named_private_subnets_stats_map output
-    statsMap := atmos.OutputMapOfObjects(s.T(), options, "named_private_subnets_stats_map")
+#### 4. TestValidationMutualExclusivity ✅
 
-    // Validate NAT Gateway IDs are present
-    for name, subnets := range statsMap {
-        for _, subnet := range subnets.([]interface{}) {
-            s := subnet.(map[string]interface{})
-            assert.NotEmpty(s.T(), s["nat_gateway_id"],
-                "NAT Gateway ID should be present for subnet %s", name)
-        }
-    }
-}
+**Purpose:** Validates that plan fails when both NAT placement methods are set
+
+**Stack Configuration:** `test/fixtures/stacks/catalog/usecase/validation-conflict.yaml`
+```yaml
+# INTENTIONALLY INVALID - both methods set
+nat_gateway_public_subnet_indices: [0]
+nat_gateway_public_subnet_names: ["public1"]
 ```
+
+**Test Validation:**
+- Attempts terraform plan (should fail)
+- Verifies error message contains "Cannot specify both"
+- Verifies error references NAT Gateway variables
+- Confirms no VPC resources were created
+- Validates that check block catches error at plan time
 
 ### Test Execution
 
@@ -685,21 +685,25 @@ The module will fail at apply time with a clear error message if invalid names a
 11. ✅ Added Terraform validation blocks for NAT placement variables (plan-time validation)
 12. ✅ Added `check` block for mutual exclusivity validation (catches errors before resource creation)
 13. ✅ Added 14 new outputs to expose all dynamic-subnets v3.0.0 capabilities
+14. ✅ Added comprehensive test coverage for v3.0.0 features:
+    - TestNATPlacementByIndex - validates index-based NAT placement
+    - TestNATPlacementByName - validates name-based NAT placement
+    - TestSeparateSubnetCounts - validates separate public/private subnet counts
+    - TestValidationMutualExclusivity - validates mutual exclusivity check
+15. ✅ Created test stack configurations for all new test cases
 
 ### Future Enhancements
 
 #### Documentation
-- [ ] Add example stacks demonstrating new features (separate-counts, NAT placement)
 - [ ] Add architecture diagrams showing different NAT placement strategies
 - [ ] Create detailed cost comparison guide for different configurations
+- [ ] Add troubleshooting guide for common migration issues
 
 #### Testing
-- [ ] Add TestSeparateSubnetCounts for v3.0.0 separate subnet feature
-- [ ] Add TestNATPlacementByIndex for index-based NAT placement
-- [ ] Add TestNATPlacementByName for name-based NAT placement
-- [ ] Add TestNATGatewayIDOutputs to validate new output fields
-- [ ] Add table-driven tests for different subnet configurations
+- [ ] Add TestNATGatewayIDOutputs to validate NAT Gateway IDs in stats maps
+- [ ] Add table-driven tests for different subnet configuration permutations
 - [ ] Add integration tests with EKS and other components
+- [ ] Add performance benchmarks for large subnet counts
 
 ---
 

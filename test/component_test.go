@@ -272,6 +272,145 @@ func (s *ComponentSuite) TestVPCWithEndpoints() {
 	s.DriftTest(component, defaultStack, nil)
 }
 
+// TestNATPlacementByIndex tests NAT Gateway placement using subnet indices
+func (s *ComponentSuite) TestNATPlacementByIndex() {
+	const component = "vpc/nat-by-index"
+
+	// Setup S3 cleanup before component destroy
+	s.setupS3Cleanup(defaultStack, defaultRegion)
+
+	defer s.DestroyAtmosComponent(s.T(), component, defaultStack, nil)
+	options, _ := s.DeployAtmosComponent(s.T(), component, defaultStack, nil)
+
+	// Get VPC ID
+	vpcID := atmos.Output(s.T(), options, "vpc_id")
+	require.True(s.T(), strings.HasPrefix(vpcID, "vpc-"), "VPC ID should have 'vpc-' prefix")
+
+	// Validate we have 2 public subnets per AZ (2 AZs = 4 total)
+	publicSubnetIDs := atmos.OutputList(s.T(), options, "public_subnet_ids")
+	assert.Equal(s.T(), 4, len(publicSubnetIDs), "Should have 2 public subnets per AZ across 2 AZs = 4 total")
+
+	// Validate NAT Gateway count - should only have NAT in first public subnet of each AZ
+	nats, err := awshelper.GetNatGatewaysByVpcIdE(s.T(), context.Background(), vpcID, defaultRegion)
+	assert.NoError(s.T(), err, "Should be able to query NAT Gateways")
+	assert.Equal(s.T(), 2, len(nats), "Should have 1 NAT per AZ (placed at index 0) = 2 NATs total")
+
+	// Validate NAT Gateways are in "available" state
+	for _, nat := range nats {
+		assert.Equal(s.T(), "available", nat.State, "NAT Gateway should be in available state")
+	}
+
+	// Validate no drift
+	s.DriftTest(component, defaultStack, nil)
+}
+
+// TestNATPlacementByName tests NAT Gateway placement using subnet names
+func (s *ComponentSuite) TestNATPlacementByName() {
+	const component = "vpc/nat-by-name"
+
+	// Setup S3 cleanup before component destroy
+	s.setupS3Cleanup(defaultStack, defaultRegion)
+
+	defer s.DestroyAtmosComponent(s.T(), component, defaultStack, nil)
+	options, _ := s.DeployAtmosComponent(s.T(), component, defaultStack, nil)
+
+	// Get VPC ID
+	vpcID := atmos.Output(s.T(), options, "vpc_id")
+	require.True(s.T(), strings.HasPrefix(vpcID, "vpc-"), "VPC ID should have 'vpc-' prefix")
+
+	// Validate we have named subnets
+	publicSubnetIDs := atmos.OutputList(s.T(), options, "public_subnet_ids")
+	assert.Equal(s.T(), 4, len(publicSubnetIDs), "Should have 2 public subnets per AZ across 2 AZs = 4 total")
+
+	// Validate NAT Gateway count - should only have NAT in "nat" named subnet per AZ
+	nats, err := awshelper.GetNatGatewaysByVpcIdE(s.T(), context.Background(), vpcID, defaultRegion)
+	assert.NoError(s.T(), err, "Should be able to query NAT Gateways")
+	assert.Equal(s.T(), 2, len(nats), "Should have NAT only in 'nat' named subnets = 2 NATs total")
+
+	// Validate named subnets output contains expected names
+	namedSubnets := atmos.OutputMap(s.T(), options, "named_subnets")
+	assert.Contains(s.T(), namedSubnets, "public", "Should have public named subnets map")
+	assert.Contains(s.T(), namedSubnets, "private", "Should have private named subnets map")
+
+	// Validate no drift
+	s.DriftTest(component, defaultStack, nil)
+}
+
+// TestSeparateSubnetCounts tests separate public and private subnet counts per AZ
+func (s *ComponentSuite) TestSeparateSubnetCounts() {
+	const component = "vpc/separate-counts"
+
+	// Setup S3 cleanup before component destroy
+	s.setupS3Cleanup(defaultStack, defaultRegion)
+
+	defer s.DestroyAtmosComponent(s.T(), component, defaultStack, nil)
+	options, _ := s.DeployAtmosComponent(s.T(), component, defaultStack, nil)
+
+	// Get VPC ID
+	vpcID := atmos.Output(s.T(), options, "vpc_id")
+	require.True(s.T(), strings.HasPrefix(vpcID, "vpc-"), "VPC ID should have 'vpc-' prefix")
+
+	// Validate public subnet count: 2 public subnets per AZ * 2 AZs = 4 total
+	publicSubnetIDs := atmos.OutputList(s.T(), options, "public_subnet_ids")
+	assert.Equal(s.T(), 4, len(publicSubnetIDs), "Should have 2 public subnets per AZ across 2 AZs = 4 total")
+
+	// Validate private subnet count: 3 private subnets per AZ * 2 AZs = 6 total
+	privateSubnetIDs := atmos.OutputList(s.T(), options, "private_subnet_ids")
+	assert.Equal(s.T(), 6, len(privateSubnetIDs), "Should have 3 private subnets per AZ across 2 AZs = 6 total")
+
+	// Get VPC details from AWS
+	vpc := aws.GetVpcById(s.T(), vpcID, defaultRegion)
+
+	// Validate total subnet count in VPC
+	subnets := vpc.Subnets
+	assert.Equal(s.T(), 10, len(subnets), "Should have 10 total subnets (4 public + 6 private)")
+
+	// Validate all public subnets are actually public (have route to IGW)
+	for _, subnetID := range publicSubnetIDs {
+		assert.True(s.T(), aws.IsPublicSubnet(s.T(), subnetID, defaultRegion),
+			"Public subnet %s should have route to Internet Gateway", subnetID)
+	}
+
+	// Validate all private subnets are actually private (no route to IGW)
+	for _, subnetID := range privateSubnetIDs {
+		assert.False(s.T(), aws.IsPublicSubnet(s.T(), subnetID, defaultRegion),
+			"Private subnet %s should not have route to Internet Gateway", subnetID)
+	}
+
+	// Validate no drift
+	s.DriftTest(component, defaultStack, nil)
+}
+
+// TestValidationMutualExclusivity tests that the validation check fails when both NAT placement methods are set
+func (s *ComponentSuite) TestValidationMutualExclusivity() {
+	const component = "vpc/validation-conflict"
+
+	// Setup S3 cleanup (even though we expect failure, cleanup in case of unexpected success)
+	s.setupS3Cleanup(defaultStack, defaultRegion)
+
+	// This deployment should FAIL at plan time due to validation check
+	// We expect an error containing "Cannot specify both"
+	options := s.GetAtmosOptions(component, defaultStack, nil)
+
+	// Attempt to plan (should fail)
+	_, err := s.PlanAtmosComponent(s.T(), component, defaultStack, nil)
+
+	// Verify that plan failed
+	require.Error(s.T(), err, "Plan should fail when both NAT placement methods are specified")
+
+	// Verify error message contains expected validation message
+	errorMessage := err.Error()
+	assert.Contains(s.T(), errorMessage, "Cannot specify both",
+		"Error message should mention mutual exclusivity: %s", errorMessage)
+	assert.Contains(s.T(), errorMessage, "nat_gateway_public_subnet",
+		"Error message should reference NAT Gateway variables: %s", errorMessage)
+
+	// Verify no resources were created (since plan failed)
+	// Try to get VPC ID - should fail or return empty
+	vpcID := atmos.Output(s.T(), options, "vpc_id")
+	assert.Empty(s.T(), vpcID, "No VPC should be created when validation fails")
+}
+
 // TestEnabledFlag tests the enabled flag functionality
 func (s *ComponentSuite) TestEnabledFlag() {
 	const component = "vpc/disabled"
