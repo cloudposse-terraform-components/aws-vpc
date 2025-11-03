@@ -390,9 +390,6 @@ func (s *ComponentSuite) TestValidationMutualExclusivity() {
 	// Get Atmos options for the component
 	options := s.GetAtmosOptions(component, defaultStack, nil)
 
-	// Run terraform init (required before plan)
-	atmos.Init(s.T(), options)
-
 	// Run terraform plan - this should FAIL due to validation check
 	_, err := atmos.PlanE(s.T(), options)
 
