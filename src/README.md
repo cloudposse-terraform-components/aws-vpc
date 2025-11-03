@@ -14,9 +14,6 @@ tags:
 
 This component is responsible for provisioning a VPC and corresponding Subnets with advanced configuration capabilities.
 
-> [!IMPORTANT]
-> **v3.0.0 Breaking Change:** This version requires AWS Provider v5.0+. Users on AWS Provider v4.x must upgrade their provider before upgrading this component. See [Migration Guide](#-breaking-change-aws-provider-v50-required) below.
-
 **Key Features:**
 - Independent control over public and private subnet counts per Availability Zone
 - Flexible NAT Gateway placement (index-based or name-based)
@@ -31,24 +28,10 @@ This component is responsible for provisioning a VPC and corresponding Subnets w
 - Separate public/private subnet counts and names per AZ
 - Precise NAT Gateway placement control for cost optimization
 - NAT Gateway IDs exposed in subnet stats outputs
-- ⚠️ **BREAKING CHANGE**: Now requires AWS Provider v5.0+ (drops support for v4.x)
+- Requires AWS Provider v5.0+
 ## Usage
 
 **Stack Level**: Regional
-
-**Dependencies:** Requires `terraform-aws-dynamic-subnets` v3.0.0 and AWS Provider v5.0+
-
-## ⚠️ Breaking Change: AWS Provider v5.0+ Required
-
-**IMPORTANT:** This version requires AWS Provider v5.0 or later. If you're currently using AWS Provider v4.x, you **must** upgrade your provider first before upgrading this component.
-
-**Migration Path for AWS Provider v4.x Users:**
-1. Upgrade AWS Provider to v5.0+ in your Terraform configuration
-2. Review AWS Provider v5.0 [migration guide](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/guides/version-5-upgrade)
-3. Test the provider upgrade in a non-production environment first
-4. Then upgrade to this component version
-
-**Why this change?** The `terraform-aws-dynamic-subnets` v3.0.0 module requires AWS Provider v5.0+ to support new features and maintain compatibility with AWS Provider v6.x.
 
 ## Basic Configuration
 
