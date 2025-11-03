@@ -297,7 +297,7 @@ func (s *ComponentSuite) TestNATPlacementByIndex() {
 
 	// Validate NAT Gateways are in "available" state
 	for _, nat := range nats {
-		assert.Equal(s.T(), "available", nat.State, "NAT Gateway should be in available state")
+		assert.Equal(s.T(), "available", string(nat.State), "NAT Gateway should be in available state")
 	}
 
 	// Validate no drift
