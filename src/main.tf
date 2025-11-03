@@ -4,6 +4,12 @@ locals {
   nat_eip_aws_shield_protection_enabled = local.enabled && var.nat_eip_aws_shield_protection_enabled
   vpc_flow_logs_enabled                 = local.enabled && var.vpc_flow_logs_enabled
 
+  # Validate mutual exclusivity of NAT Gateway placement variables
+  nat_placement_conflict = (
+    var.nat_gateway_public_subnet_indices != null &&
+    var.nat_gateway_public_subnet_names != null
+  )
+
   # The usage of specific kubernetes.io/cluster/* resource tags were required before Kubernetes 1.19,
   # but are now deprecated. See https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html
 
@@ -88,6 +94,14 @@ module "vpc" {
   dns_support_enabled   = true
 
   context = module.this.context
+}
+
+# Validate NAT Gateway placement variable mutual exclusivity at plan time
+check "nat_placement_mutual_exclusivity" {
+  assert {
+    condition     = !local.nat_placement_conflict
+    error_message = "Cannot specify both nat_gateway_public_subnet_indices and nat_gateway_public_subnet_names. Choose one NAT placement method or leave both null for default behavior (NAT in all public subnets)."
+  }
 }
 
 # We could create a security group per endpoint,

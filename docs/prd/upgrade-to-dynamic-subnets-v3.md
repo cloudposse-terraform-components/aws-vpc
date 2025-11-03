@@ -629,17 +629,32 @@ No state migration required. The upgrade can be applied directly to existing dep
 
 ### 1. Variable Conflicts
 
-**Status:** Expected behavior
+**Status:** Validated at plan time
 **Impact:** Low
 **Description:** Cannot use both index-based and name-based NAT placement simultaneously
 
+**Validation:** The component includes Terraform validation blocks and a `check` block that enforce mutual exclusivity at **plan time** (before any resources are created):
+
+- Variable validation blocks ensure values are valid when provided (non-empty lists, valid formats)
+- `check` block validates that both placement methods are not used simultaneously
+- Clear error messages guide users to the correct configuration
+
 ```hcl
-# ❌ Invalid - both set
+# ❌ Invalid - both set (fails at terraform plan)
 nat_gateway_public_subnet_indices = [0]
 nat_gateway_public_subnet_names   = ["loadbalancer"]
+# Error: Cannot specify both nat_gateway_public_subnet_indices and nat_gateway_public_subnet_names
 
 # ✅ Valid - use one or the other
 nat_gateway_public_subnet_indices = [0]
+nat_gateway_public_subnet_names   = null
+
+# ✅ Valid - use name-based
+nat_gateway_public_subnet_indices = null
+nat_gateway_public_subnet_names   = ["loadbalancer"]
+
+# ✅ Valid - use default (NAT in all public subnets)
+nat_gateway_public_subnet_indices = null
 nat_gateway_public_subnet_names   = null
 ```
 
@@ -667,6 +682,9 @@ The module will fail at apply time with a clear error message if invalid names a
 8. ✅ Cost optimization examples documented with real numbers
 9. ✅ Configuration backward compatibility maintained (100% for Terraform configs on AWS Provider v5.0+)
 10. ✅ Comprehensive PRD documentation created with breaking change clearly documented
+11. ✅ Added Terraform validation blocks for NAT placement variables (plan-time validation)
+12. ✅ Added `check` block for mutual exclusivity validation (catches errors before resource creation)
+13. ✅ Added 14 new outputs to expose all dynamic-subnets v3.0.0 capabilities
 
 ### Future Enhancements
 
