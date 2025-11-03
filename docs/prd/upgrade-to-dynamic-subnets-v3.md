@@ -214,9 +214,9 @@ go 1.25              // Updated from 1.23.0
 toolchain go1.25.0
 
 require (
-	github.com/gruntwork-io/terratest v0.52.0  // Updated from 0.48.1
-	github.com/stretchr/testify v1.11.1        // Updated from 1.9.0
-	// ... all indirect dependencies updated to latest versions
+  github.com/gruntwork-io/terratest v0.52.0  // Updated from 0.48.1
+  github.com/stretchr/testify v1.11.1        // Updated from 1.9.0
+  // ... all indirect dependencies updated to latest versions
 )
 ```
 
@@ -268,7 +268,7 @@ components:
 **Result:**
 - NAT Gateway only in subnets named "loadbalancer"
 - More readable configuration than using indices
-- Easy to understand NAT placement strategy
+- Easy-to-understand NAT placement strategy
 
 ### Example 3: High-Availability NAT Configuration
 
@@ -733,10 +733,10 @@ atmos terraform apply vpc -s <stack>
 
 ## References
 
-- **Dynamic Subnets Module v3.0.0**: https://github.com/cloudposse/terraform-aws-dynamic-subnets/releases/tag/v3.0.0
-- **Dynamic Subnets Module PRD**: [terraform-aws-dynamic-subnets/docs/prd/separate-public-private-subnets-and-nat-placement.md](https://github.com/cloudposse/terraform-aws-dynamic-subnets/blob/main/docs/prd/separate-public-private-subnets-and-nat-placement.md)
-- **AWS NAT Gateway Pricing**: https://aws.amazon.com/vpc/pricing/
-- **CloudPosse Terraform Modules**: https://github.com/cloudposse
+- **Dynamic Subnets Module v3.0.0**: [Release v3.0.0](https://github.com/cloudposse/terraform-aws-dynamic-subnets/releases/tag/v3.0.0)
+- **Dynamic Subnets Module PRD**: [separate-public-private-subnets-and-nat-placement.md](https://github.com/cloudposse/terraform-aws-dynamic-subnets/blob/main/docs/prd/separate-public-private-subnets-and-nat-placement.md)
+- **AWS NAT Gateway Pricing**: [AWS VPC Pricing](https://aws.amazon.com/vpc/pricing/)
+- **CloudPosse Terraform Modules**: [GitHub Organization](https://github.com/cloudposse)
 
 ---
 
