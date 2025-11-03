@@ -14,6 +14,9 @@ tags:
 
 This component is responsible for provisioning a VPC and corresponding Subnets with advanced configuration capabilities.
 
+> [!IMPORTANT]
+> **v3.0.0 Breaking Change:** This version requires AWS Provider v5.0+. Users on AWS Provider v4.x must upgrade their provider before upgrading this component. See [Migration Guide](#-breaking-change-aws-provider-v50-required) below.
+
 **Key Features:**
 - Independent control over public and private subnet counts per Availability Zone
 - Flexible NAT Gateway placement (index-based or name-based)
