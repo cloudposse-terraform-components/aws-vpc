@@ -139,7 +139,7 @@ module "vpc_endpoints" {
 
 module "subnets" {
   source  = "cloudposse/dynamic-subnets/aws"
-  version = "2.4.2"
+  version = "3.0.0"
 
   availability_zones              = local.availability_zones
   availability_zone_ids           = local.availability_zone_ids
@@ -158,8 +158,20 @@ module "subnets" {
   public_subnets_additional_tags  = local.public_subnets_additional_tags
   private_subnets_additional_tags = local.private_subnets_additional_tags
   vpc_id                          = module.vpc.vpc_id
+
+  # Legacy variables (deprecated but still supported for backward compatibility)
   subnets_per_az_count            = var.subnets_per_az_count
   subnets_per_az_names            = var.subnets_per_az_names
+
+  # New variables for separate public/private subnet configuration
+  public_subnets_per_az_count     = var.public_subnets_per_az_count
+  public_subnets_per_az_names     = var.public_subnets_per_az_names
+  private_subnets_per_az_count    = var.private_subnets_per_az_count
+  private_subnets_per_az_names    = var.private_subnets_per_az_names
+
+  # New variables for flexible NAT Gateway placement
+  nat_gateway_public_subnet_indices = var.nat_gateway_public_subnet_indices
+  nat_gateway_public_subnet_names   = var.nat_gateway_public_subnet_names
 
   context = module.this.context
 }

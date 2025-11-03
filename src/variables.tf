@@ -269,3 +269,75 @@ variable "vpc_flow_logs_destination_options_per_hour_partition" {
   default     = false
 }
 
+# New variables for separate public/private subnet configuration (dynamic-subnets v3.0.0+)
+
+variable "public_subnets_per_az_count" {
+  type        = number
+  description = <<-EOT
+    The number of public subnets to provision per Availability Zone.
+    If null, defaults to the value of `subnets_per_az_count` for backward compatibility.
+    Use this to create different numbers of public and private subnets per AZ.
+  EOT
+  default     = null
+  nullable    = true
+}
+
+variable "public_subnets_per_az_names" {
+  type        = list(string)
+  description = <<-EOT
+    The names of public subnets to provision per Availability Zone.
+    If null, defaults to the value of `subnets_per_az_names` for backward compatibility.
+    Use this to create different named public subnets than private subnets.
+  EOT
+  default     = null
+  nullable    = true
+}
+
+variable "private_subnets_per_az_count" {
+  type        = number
+  description = <<-EOT
+    The number of private subnets to provision per Availability Zone.
+    If null, defaults to the value of `subnets_per_az_count` for backward compatibility.
+    Use this to create different numbers of private and public subnets per AZ.
+  EOT
+  default     = null
+  nullable    = true
+}
+
+variable "private_subnets_per_az_names" {
+  type        = list(string)
+  description = <<-EOT
+    The names of private subnets to provision per Availability Zone.
+    If null, defaults to the value of `subnets_per_az_names` for backward compatibility.
+    Use this to create different named private subnets than public subnets.
+  EOT
+  default     = null
+  nullable    = true
+}
+
+# New variables for flexible NAT Gateway placement (dynamic-subnets v3.0.0+)
+
+variable "nat_gateway_public_subnet_indices" {
+  type        = list(number)
+  description = <<-EOT
+    Indices (0-based) of public subnets where NAT Gateways should be placed.
+    Use this for index-based NAT Gateway placement (e.g., [0, 1] to place NATs in first 2 public subnets per AZ).
+    Conflicts with `nat_gateway_public_subnet_names`.
+    If both are null, NAT Gateways are placed in all public subnets by default.
+  EOT
+  default     = null
+  nullable    = true
+}
+
+variable "nat_gateway_public_subnet_names" {
+  type        = list(string)
+  description = <<-EOT
+    Names of public subnets where NAT Gateways should be placed.
+    Use this for name-based NAT Gateway placement (e.g., ["loadbalancer"] to place NATs only in "loadbalancer" subnets).
+    Conflicts with `nat_gateway_public_subnet_indices`.
+    If both are null, NAT Gateways are placed in all public subnets by default.
+  EOT
+  default     = null
+  nullable    = true
+}
+

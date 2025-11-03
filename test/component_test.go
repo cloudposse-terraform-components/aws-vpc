@@ -14,232 +14,277 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Test constants - centralized for easier maintenance
+const (
+	defaultStack      = "default-test"
+	defaultRegion     = "us-east-2"
+	expectedCIDR      = "172.16.0.0/16"
+	vpcFlowLogsBucket = "vpc-flow-logs-bucket"
+)
+
 type ComponentSuite struct {
 	helper.TestSuite
 }
 
+// Helper function to validate common VPC properties
+func (s *ComponentSuite) validateVPCProperties(vpc *aws.Vpc, expectedName string) {
+	s.T().Helper() // Mark this as a helper function for better error reporting
+
+	assert.Equal(s.T(), expectedName, vpc.Name, "VPC name mismatch")
+	assert.Equal(s.T(), expectedCIDR, *vpc.CidrAssociations[0], "CIDR association mismatch")
+	assert.Equal(s.T(), expectedCIDR, *vpc.CidrBlock, "CIDR block mismatch")
+	assert.Nil(s.T(), vpc.Ipv6CidrAssociations, "IPv6 CIDR should be nil")
+
+	// Validate tags
+	assert.Equal(s.T(), "ue2", vpc.Tags["Environment"], "Environment tag mismatch")
+	assert.Equal(s.T(), "eg", vpc.Tags["Namespace"], "Namespace tag mismatch")
+	assert.Equal(s.T(), "test", vpc.Tags["Stage"], "Stage tag mismatch")
+	assert.Equal(s.T(), "default", vpc.Tags["Tenant"], "Tenant tag mismatch")
+}
+
+// Helper function to setup S3 bucket cleanup
+func (s *ComponentSuite) setupS3Cleanup(stack, region string) {
+	s.T().Helper()
+
+	vpcFlowLogsBucketOptions := s.GetAtmosOptions(vpcFlowLogsBucket, stack, nil)
+	bucketName := atmos.Output(s.T(), vpcFlowLogsBucketOptions, "vpc_flow_logs_bucket_id")
+
+	// Clean up S3 bucket before component destroy
+	s.T().Cleanup(func() {
+		aws.EmptyS3Bucket(s.T(), region, bucketName)
+	})
+}
+
+// TestPrivateVPC tests a VPC with only private subnets and no NAT Gateways
 func (s *ComponentSuite) TestPrivateVPC() {
 	const component = "vpc/private"
-	const stack = "default-test"
-	const awsRegion = "us-east-2"
 
-	defer s.DestroyAtmosComponent(s.T(), component, stack, nil)
-	options, _ := s.DeployAtmosComponent(s.T(), component, stack, nil)
+	// Setup S3 cleanup before component destroy
+	s.setupS3Cleanup(defaultStack, defaultRegion)
+
+	defer s.DestroyAtmosComponent(s.T(), component, defaultStack, nil)
+	options, _ := s.DeployAtmosComponent(s.T(), component, defaultStack, nil)
+
+	// Validate VPC CIDR
 	cidrBlock := atmos.Output(s.T(), options, "vpc_cidr")
+	assert.Equal(s.T(), expectedCIDR, cidrBlock, "VPC CIDR mismatch")
 
-	// Ensure S3 bucket is empty before destroy
-	vpcFlowLogsBucketOptions := s.GetAtmosOptions("vpc-flow-logs-bucket", stack, nil)
-	bucketName := atmos.Output(s.T(), vpcFlowLogsBucketOptions, "vpc_flow_logs_bucket_id")
-	defer aws.EmptyS3Bucket(s.T(), awsRegion, bucketName)
+	// Get VPC ID and validate format
+	vpcID := atmos.Output(s.T(), options, "vpc_id")
+	require.True(s.T(), strings.HasPrefix(vpcID, "vpc-"), "VPC ID should have 'vpc-' prefix")
 
-	assert.Equal(s.T(), "172.16.0.0/16", cidrBlock)
+	// Get VPC details from AWS
+	vpc := aws.GetVpcById(s.T(), vpcID, defaultRegion)
 
-	vpcId := atmos.Output(s.T(), options, "vpc_id")
-	require.True(s.T(), strings.HasPrefix(vpcId, "vpc-"))
+	// Validate VPC properties using helper function
+	expectedName := fmt.Sprintf("eg-default-ue2-test-vpc-terraform-%s", s.Config.RandomIdentifier)
+	s.validateVPCProperties(vpc, expectedName)
 
-	vpc := aws.GetVpcById(s.T(), vpcId, awsRegion)
-
-	assert.Equal(s.T(), vpc.Name, fmt.Sprintf("eg-default-ue2-test-vpc-terraform-%s", s.Config.RandomIdentifier))
-	assert.Equal(s.T(), *vpc.CidrAssociations[0], "172.16.0.0/16")
-	assert.Equal(s.T(), *vpc.CidrBlock, "172.16.0.0/16")
-	assert.Nil(s.T(), vpc.Ipv6CidrAssociations)
-	assert.Equal(s.T(), vpc.Tags["Environment"], "ue2")
-	assert.Equal(s.T(), vpc.Tags["Namespace"], "eg")
-	assert.Equal(s.T(), vpc.Tags["Stage"], "test")
-	assert.Equal(s.T(), vpc.Tags["Tenant"], "default")
-
+	// Validate subnet counts
 	subnets := vpc.Subnets
-	require.Equal(s.T(), 2, len(subnets))
+	require.Equal(s.T(), 2, len(subnets), "Should have 2 private subnets")
 
-	public_subnet_ids := atmos.OutputList(s.T(), options, "public_subnet_ids")
-	assert.Empty(s.T(), public_subnet_ids)
+	// Validate no public subnets exist
+	publicSubnetIDs := atmos.OutputList(s.T(), options, "public_subnet_ids")
+	assert.Empty(s.T(), publicSubnetIDs, "Should have no public subnets")
 
-	public_subnet_cidrs := atmos.OutputList(s.T(), options, "public_subnet_cidrs")
-	assert.Empty(s.T(), public_subnet_cidrs)
+	publicSubnetCIDRs := atmos.OutputList(s.T(), options, "public_subnet_cidrs")
+	assert.Empty(s.T(), publicSubnetCIDRs, "Should have no public subnet CIDRs")
 
-	private_subnet_ids := atmos.OutputList(s.T(), options, "private_subnet_ids")
-	assert.Equal(s.T(), 2, len(private_subnet_ids))
+	// Validate private subnets
+	privateSubnetIDs := atmos.OutputList(s.T(), options, "private_subnet_ids")
+	require.Equal(s.T(), 2, len(privateSubnetIDs), "Should have 2 private subnets")
 
-	assert.Contains(s.T(), private_subnet_ids, subnets[0].Id)
-	assert.Contains(s.T(), private_subnet_ids, subnets[1].Id)
+	assert.Contains(s.T(), privateSubnetIDs, subnets[0].Id, "First subnet should be in private subnet IDs")
+	assert.Contains(s.T(), privateSubnetIDs, subnets[1].Id, "Second subnet should be in private subnet IDs")
 
-	assert.False(s.T(), aws.IsPublicSubnet(s.T(), subnets[0].Id, awsRegion))
-	assert.False(s.T(), aws.IsPublicSubnet(s.T(), subnets[1].Id, awsRegion))
+	// Validate subnets are private (no route to IGW)
+	assert.False(s.T(), aws.IsPublicSubnet(s.T(), subnets[0].Id, defaultRegion), "First subnet should be private")
+	assert.False(s.T(), aws.IsPublicSubnet(s.T(), subnets[1].Id, defaultRegion), "Second subnet should be private")
 
-	nats, err := awshelper.GetNatGatewaysByVpcIdE(s.T(), context.Background(), vpcId, awsRegion)
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), 0, len(nats))
+	// Validate no NAT Gateways exist
+	nats, err := awshelper.GetNatGatewaysByVpcIdE(s.T(), context.Background(), vpcID, defaultRegion)
+	assert.NoError(s.T(), err, "Should be able to query NAT Gateways")
+	assert.Equal(s.T(), 0, len(nats), "Should have no NAT Gateways in private VPC")
 
-	s.DriftTest(component, stack, nil)
+	// Validate no drift
+	s.DriftTest(component, defaultStack, nil)
 }
 
+// TestPublicVPC tests a VPC with both public and private subnets with NAT Gateway
 func (s *ComponentSuite) TestPublicVPC() {
 	const component = "vpc/public"
-	const stack = "default-test"
-	const awsRegion = "us-east-2"
 
-	defer s.DestroyAtmosComponent(s.T(), component, stack, nil)
-	options, _ := s.DeployAtmosComponent(s.T(), component, stack, nil)
+	// Setup S3 cleanup before component destroy
+	s.setupS3Cleanup(defaultStack, defaultRegion)
+
+	defer s.DestroyAtmosComponent(s.T(), component, defaultStack, nil)
+	options, _ := s.DeployAtmosComponent(s.T(), component, defaultStack, nil)
+
+	// Validate VPC CIDR
 	cidrBlock := atmos.Output(s.T(), options, "vpc_cidr")
+	assert.Equal(s.T(), expectedCIDR, cidrBlock, "VPC CIDR mismatch")
 
-	// Ensure S3 bucket is empty before destroy
-	vpcFlowLogsBucketOptions := s.GetAtmosOptions("vpc-flow-logs-bucket", stack, nil)
-	bucketName := atmos.Output(s.T(), vpcFlowLogsBucketOptions, "vpc_flow_logs_bucket_id")
-	defer aws.EmptyS3Bucket(s.T(), awsRegion, bucketName)
+	// Get VPC ID and validate format
+	vpcID := atmos.Output(s.T(), options, "vpc_id")
+	require.True(s.T(), strings.HasPrefix(vpcID, "vpc-"), "VPC ID should have 'vpc-' prefix")
 
-	assert.Equal(s.T(), "172.16.0.0/16", cidrBlock)
+	// Get VPC details from AWS
+	vpc := aws.GetVpcById(s.T(), vpcID, defaultRegion)
 
-	vpcId := atmos.Output(s.T(), options, "vpc_id")
-	require.True(s.T(), strings.HasPrefix(vpcId, "vpc-"))
+	// Validate VPC properties using helper function
+	expectedName := fmt.Sprintf("eg-default-ue2-test-vpc-terraform-%s", s.Config.RandomIdentifier)
+	s.validateVPCProperties(vpc, expectedName)
 
-	vpc := aws.GetVpcById(s.T(), vpcId, awsRegion)
-
-	assert.Equal(s.T(), vpc.Name, fmt.Sprintf("eg-default-ue2-test-vpc-terraform-%s", s.Config.RandomIdentifier))
-	assert.Equal(s.T(), *vpc.CidrAssociations[0], "172.16.0.0/16")
-	assert.Equal(s.T(), *vpc.CidrBlock, "172.16.0.0/16")
-	assert.Nil(s.T(), vpc.Ipv6CidrAssociations)
-	assert.Equal(s.T(), vpc.Tags["Environment"], "ue2")
-	assert.Equal(s.T(), vpc.Tags["Namespace"], "eg")
-	assert.Equal(s.T(), vpc.Tags["Stage"], "test")
-	assert.Equal(s.T(), vpc.Tags["Tenant"], "default")
-
+	// Validate total subnet count
 	subnets := vpc.Subnets
-	require.Equal(s.T(), 4, len(subnets))
+	require.Equal(s.T(), 4, len(subnets), "Should have 4 total subnets (2 public + 2 private)")
 
-	public_subnet_ids := atmos.OutputList(s.T(), options, "public_subnet_ids")
-	assert.Equal(s.T(), 2, len(public_subnet_ids))
+	// Validate public subnets
+	publicSubnetIDs := atmos.OutputList(s.T(), options, "public_subnet_ids")
+	assert.Equal(s.T(), 2, len(publicSubnetIDs), "Should have 2 public subnets")
 
-	public_subnet_cidrs := atmos.OutputList(s.T(), options, "public_subnet_cidrs")
-	assert.Equal(s.T(), 2, len(public_subnet_cidrs))
+	publicSubnetCIDRs := atmos.OutputList(s.T(), options, "public_subnet_cidrs")
+	assert.Equal(s.T(), 2, len(publicSubnetCIDRs), "Should have 2 public subnet CIDRs")
 
-	private_subnet_ids := atmos.OutputList(s.T(), options, "private_subnet_ids")
-	assert.Equal(s.T(), 2, len(private_subnet_ids))
+	// Validate private subnets
+	privateSubnetIDs := atmos.OutputList(s.T(), options, "private_subnet_ids")
+	assert.Equal(s.T(), 2, len(privateSubnetIDs), "Should have 2 private subnets")
 
-	private_subnet_cidrs := atmos.OutputList(s.T(), options, "private_subnet_cidrs")
-	assert.Equal(s.T(), 2, len(private_subnet_cidrs))
+	privateSubnetCIDRs := atmos.OutputList(s.T(), options, "private_subnet_cidrs")
+	assert.Equal(s.T(), 2, len(privateSubnetCIDRs), "Should have 2 private subnet CIDRs")
 
-	assert.False(s.T(), aws.IsPublicSubnet(s.T(), private_subnet_ids[0], awsRegion))
-	assert.False(s.T(), aws.IsPublicSubnet(s.T(), private_subnet_ids[1], awsRegion))
+	// Validate subnet types (public vs private)
+	assert.False(s.T(), aws.IsPublicSubnet(s.T(), privateSubnetIDs[0], defaultRegion), "First private subnet should not be public")
+	assert.False(s.T(), aws.IsPublicSubnet(s.T(), privateSubnetIDs[1], defaultRegion), "Second private subnet should not be public")
 
-	assert.True(s.T(), aws.IsPublicSubnet(s.T(), public_subnet_ids[0], awsRegion))
-	assert.True(s.T(), aws.IsPublicSubnet(s.T(), public_subnet_ids[1], awsRegion))
+	assert.True(s.T(), aws.IsPublicSubnet(s.T(), publicSubnetIDs[0], defaultRegion), "First public subnet should be public")
+	assert.True(s.T(), aws.IsPublicSubnet(s.T(), publicSubnetIDs[1], defaultRegion), "Second public subnet should be public")
 
-	nats, err := awshelper.GetNatGatewaysByVpcIdE(s.T(), context.Background(), vpcId, awsRegion)
-	assert.NoError(s.T(), err)
-	assert.Equal(s.T(), 1, len(nats))
+	// Validate NAT Gateway count
+	nats, err := awshelper.GetNatGatewaysByVpcIdE(s.T(), context.Background(), vpcID, defaultRegion)
+	assert.NoError(s.T(), err, "Should be able to query NAT Gateways")
+	assert.Equal(s.T(), 1, len(nats), "Should have 1 NAT Gateway (cost-optimized configuration)")
 
-	s.DriftTest(component, stack, nil)
+	// Validate no drift
+	s.DriftTest(component, defaultStack, nil)
 }
 
+// TestVPCFlowLogs tests VPC Flow Logs configuration and S3 bucket integration
 func (s *ComponentSuite) TestVPCFlowLogs() {
 	const component = "vpc/with_flowlogs"
-	const stack = "default-test"
-	const awsRegion = "us-east-2"
 
-	defer s.DestroyAtmosComponent(s.T(), component, stack, nil)
+	// Setup S3 cleanup before component destroy
+	s.setupS3Cleanup(defaultStack, defaultRegion)
 
-	// Ensure S3 bucket is empty before destroy
-	vpcFlowLogsBucketOptions := s.GetAtmosOptions("vpc-flow-logs-bucket", stack, nil)
-	bucketName := atmos.Output(s.T(), vpcFlowLogsBucketOptions, "vpc_flow_logs_bucket_id")
-	defer aws.EmptyS3Bucket(s.T(), awsRegion, bucketName)
+	defer s.DestroyAtmosComponent(s.T(), component, defaultStack, nil)
+	options, _ := s.DeployAtmosComponent(s.T(), component, defaultStack, nil)
 
-	options, _ := s.DeployAtmosComponent(s.T(), component, stack, nil)
-
+	// Validate VPC CIDR
 	cidrBlock := atmos.Output(s.T(), options, "vpc_cidr")
-	assert.Equal(s.T(), "172.16.0.0/16", cidrBlock)
+	assert.Equal(s.T(), expectedCIDR, cidrBlock, "VPC CIDR mismatch")
 
-	vpcId := atmos.Output(s.T(), options, "vpc_id")
-	require.True(s.T(), strings.HasPrefix(vpcId, "vpc-"))
+	// Get VPC ID and validate format
+	vpcID := atmos.Output(s.T(), options, "vpc_id")
+	require.True(s.T(), strings.HasPrefix(vpcID, "vpc-"), "VPC ID should have 'vpc-' prefix")
 
-	vpc := aws.GetVpcById(s.T(), vpcId, awsRegion)
+	// Get VPC details from AWS
+	vpc := aws.GetVpcById(s.T(), vpcID, defaultRegion)
 
-	assert.Equal(s.T(), vpc.Name, fmt.Sprintf("eg-default-ue2-test-vpc-terraform-%s", s.Config.RandomIdentifier))
-	assert.Equal(s.T(), *vpc.CidrAssociations[0], "172.16.0.0/16")
-	assert.Equal(s.T(), *vpc.CidrBlock, "172.16.0.0/16")
-	assert.Nil(s.T(), vpc.Ipv6CidrAssociations)
-	assert.Equal(s.T(), vpc.Tags["Environment"], "ue2")
-	assert.Equal(s.T(), vpc.Tags["Namespace"], "eg")
-	assert.Equal(s.T(), vpc.Tags["Stage"], "test")
-	assert.Equal(s.T(), vpc.Tags["Tenant"], "default")
+	// Validate VPC properties using helper function
+	expectedName := fmt.Sprintf("eg-default-ue2-test-vpc-terraform-%s", s.Config.RandomIdentifier)
+	s.validateVPCProperties(vpc, expectedName)
 
+	// Validate subnet count
 	subnets := vpc.Subnets
-	require.Equal(s.T(), 1, len(subnets))
+	require.Equal(s.T(), 1, len(subnets), "Should have 1 subnet")
 
-	flow_log_destinations := atmos.Output(s.T(), options, "flow_log_destination")
-	require.NotEmpty(s.T(), flow_log_destinations, "Expected at least one flow log destination but found none")
-	require.True(s.T(), strings.HasPrefix(flow_log_destinations, "arn:aws:s3:::eg-default-ue2-test-vpc-flow-logs-bucket"))
+	// Validate flow log destination
+	flowLogDestinations := atmos.Output(s.T(), options, "flow_log_destination")
+	require.NotEmpty(s.T(), flowLogDestinations, "Flow log destination should not be empty")
+	require.True(s.T(), strings.HasPrefix(flowLogDestinations, "arn:aws:s3:::eg-default-ue2-test-vpc-flow-logs-bucket"),
+		"Flow log destination should be S3 bucket ARN")
 
-	flow_log_ids := atmos.OutputList(s.T(), options, "flow_log_id")
-	require.NotEmpty(s.T(), flow_log_ids, "Expected at least one flow log ID but found none")
-	require.True(s.T(), strings.HasPrefix(flow_log_ids[0], "fl-"), "Flow log ID does not match expected format")
+	// Validate flow log IDs
+	flowLogIDs := atmos.OutputList(s.T(), options, "flow_log_id")
+	require.NotEmpty(s.T(), flowLogIDs, "Flow log IDs should not be empty")
+	require.True(s.T(), strings.HasPrefix(flowLogIDs[0], "fl-"), "Flow log ID should have 'fl-' prefix")
 
-	s.DriftTest(component, stack, nil)
+	// Validate no drift
+	s.DriftTest(component, defaultStack, nil)
 }
 
+// TestVPCWithEndpoints tests VPC Endpoints (Gateway and Interface) configuration
 func (s *ComponentSuite) TestVPCWithEndpoints() {
 	const component = "vpc/with_endpoints"
-	const stack = "default-test"
-	const awsRegion = "us-east-2"
 
-	defer s.DestroyAtmosComponent(s.T(), component, stack, nil)
-	options, _ := s.DeployAtmosComponent(s.T(), component, stack, nil)
+	// Setup S3 cleanup before component destroy
+	s.setupS3Cleanup(defaultStack, defaultRegion)
 
-	// Ensure S3 bucket is empty before destroy
-	vpcFlowLogsBucketOptions := s.GetAtmosOptions("vpc-flow-logs-bucket", stack, nil)
-	bucketName := atmos.Output(s.T(), vpcFlowLogsBucketOptions, "vpc_flow_logs_bucket_id")
-	defer aws.EmptyS3Bucket(s.T(), awsRegion, bucketName)
+	defer s.DestroyAtmosComponent(s.T(), component, defaultStack, nil)
+	options, _ := s.DeployAtmosComponent(s.T(), component, defaultStack, nil)
 
-	// Test basic VPC properties
+	// Validate VPC CIDR
 	cidrBlock := atmos.Output(s.T(), options, "vpc_cidr")
-	assert.Equal(s.T(), "172.16.0.0/16", cidrBlock)
+	assert.Equal(s.T(), expectedCIDR, cidrBlock, "VPC CIDR mismatch")
 
-	vpcId := atmos.Output(s.T(), options, "vpc_id")
-	require.True(s.T(), strings.HasPrefix(vpcId, "vpc-"))
+	// Get VPC ID and validate format
+	vpcID := atmos.Output(s.T(), options, "vpc_id")
+	require.True(s.T(), strings.HasPrefix(vpcID, "vpc-"), "VPC ID should have 'vpc-' prefix")
 
-	// Test Gateway VPC Endpoints outputs
-	gatewayEndpoints := atmos.OutputMap(s.T(), options, "gateway_vpc_endpoints")
-	assert.NotEmpty(s.T(), gatewayEndpoints, "Gateway VPC endpoints should not be empty")
+	// Test Gateway VPC Endpoints
+	s.T().Run("GatewayEndpoints", func(t *testing.T) {
+		gatewayEndpoints := atmos.OutputMap(t, options, "gateway_vpc_endpoints")
+		assert.NotEmpty(t, gatewayEndpoints, "Gateway VPC endpoints should not be empty")
 
-	// Check S3 gateway endpoint
-	s3EndpointId := atmos.Output(s.T(), options, "vpc_endpoint_s3_id")
-	assert.NotEmpty(s.T(), s3EndpointId, "S3 endpoint ID should not be empty")
-	assert.True(s.T(), strings.HasPrefix(s3EndpointId, "vpce-"), "S3 endpoint ID should have correct format")
+		// Validate S3 gateway endpoint
+		s3EndpointID := atmos.Output(t, options, "vpc_endpoint_s3_id")
+		assert.NotEmpty(t, s3EndpointID, "S3 endpoint ID should not be empty")
+		assert.True(t, strings.HasPrefix(s3EndpointID, "vpce-"), "S3 endpoint ID should have 'vpce-' prefix")
 
-	s3PrefixListId := atmos.Output(s.T(), options, "vpc_endpoint_s3_prefix_list_id")
-	assert.NotEmpty(s.T(), s3PrefixListId, "S3 prefix list ID should not be empty")
-	assert.True(s.T(), strings.HasPrefix(s3PrefixListId, "pl-"), "S3 prefix list ID should have correct format")
+		s3PrefixListID := atmos.Output(t, options, "vpc_endpoint_s3_prefix_list_id")
+		assert.NotEmpty(t, s3PrefixListID, "S3 prefix list ID should not be empty")
+		assert.True(t, strings.HasPrefix(s3PrefixListID, "pl-"), "S3 prefix list ID should have 'pl-' prefix")
 
-	// Check DynamoDB gateway endpoint
-	dynamodbEndpointId := atmos.Output(s.T(), options, "vpc_endpoint_dynamodb_id")
-	assert.NotEmpty(s.T(), dynamodbEndpointId, "DynamoDB endpoint ID should not be empty")
-	assert.True(s.T(), strings.HasPrefix(dynamodbEndpointId, "vpce-"), "DynamoDB endpoint ID should have correct format")
+		// Validate DynamoDB gateway endpoint
+		dynamodbEndpointID := atmos.Output(t, options, "vpc_endpoint_dynamodb_id")
+		assert.NotEmpty(t, dynamodbEndpointID, "DynamoDB endpoint ID should not be empty")
+		assert.True(t, strings.HasPrefix(dynamodbEndpointID, "vpce-"), "DynamoDB endpoint ID should have 'vpce-' prefix")
 
-	dynamodbPrefixListId := atmos.Output(s.T(), options, "vpc_endpoint_dynamodb_prefix_list_id")
-	assert.NotEmpty(s.T(), dynamodbPrefixListId, "DynamoDB prefix list ID should not be empty")
-	assert.True(s.T(), strings.HasPrefix(dynamodbPrefixListId, "pl-"), "DynamoDB prefix list ID should have correct format")
+		dynamodbPrefixListID := atmos.Output(t, options, "vpc_endpoint_dynamodb_prefix_list_id")
+		assert.NotEmpty(t, dynamodbPrefixListID, "DynamoDB prefix list ID should not be empty")
+		assert.True(t, strings.HasPrefix(dynamodbPrefixListID, "pl-"), "DynamoDB prefix list ID should have 'pl-' prefix")
+	})
 
-	// Test Interface VPC Endpoints outputs
-	interfaceEndpoints := atmos.OutputMap(s.T(), options, "interface_vpc_endpoints")
-	assert.NotEmpty(s.T(), interfaceEndpoints, "Interface VPC endpoints should not be empty")
-	assert.Equal(s.T(), 2, len(interfaceEndpoints), "Should have 2 interface endpoints (ec2 and ssm)")
+	// Test Interface VPC Endpoints
+	s.T().Run("InterfaceEndpoints", func(t *testing.T) {
+		interfaceEndpoints := atmos.OutputMap(t, options, "interface_vpc_endpoints")
+		assert.NotEmpty(t, interfaceEndpoints, "Interface VPC endpoints should not be empty")
+		assert.Equal(t, 2, len(interfaceEndpoints), "Should have 2 interface endpoints (ec2 and ssm)")
 
-	// Test interface endpoint security group
-	interfaceSecurityGroupId := atmos.Output(s.T(), options, "vpc_endpoint_interface_security_group_id")
-	assert.NotEmpty(s.T(), interfaceSecurityGroupId, "Interface endpoint security group ID should not be empty")
-	assert.True(s.T(), strings.HasPrefix(interfaceSecurityGroupId, "sg-"), "Security group ID should have correct format")
+		// Validate interface endpoint security group
+		interfaceSecurityGroupID := atmos.Output(t, options, "vpc_endpoint_interface_security_group_id")
+		assert.NotEmpty(t, interfaceSecurityGroupID, "Interface endpoint security group ID should not be empty")
+		assert.True(t, strings.HasPrefix(interfaceSecurityGroupID, "sg-"), "Security group ID should have 'sg-' prefix")
+	})
 
-	s.DriftTest(component, stack, nil)
+	// Validate no drift
+	s.DriftTest(component, defaultStack, nil)
 }
 
+// TestEnabledFlag tests the enabled flag functionality
 func (s *ComponentSuite) TestEnabledFlag() {
 	const component = "vpc/disabled"
-	const stack = "default-test"
-	s.VerifyEnabledFlag(component, stack, nil)
+	s.VerifyEnabledFlag(component, defaultStack, nil)
 }
 
+// TestRunVPCSuite is the main test suite runner
 func TestRunVPCSuite(t *testing.T) {
 	suite := new(ComponentSuite)
 
-	suite.AddDependency(t, "vpc-flow-logs-bucket", "default-test", nil)
+	// Add dependency on VPC Flow Logs bucket
+	suite.AddDependency(t, vpcFlowLogsBucket, defaultStack, nil)
+
+	// Run the test suite
 	helper.Run(t, suite)
 }
