@@ -3,9 +3,19 @@ output "public_subnet_ids" {
   description = "Public subnet IDs"
 }
 
+output "public_subnet_arns" {
+  value       = module.subnets.public_subnet_arns
+  description = "Public subnet ARNs"
+}
+
 output "public_subnet_cidrs" {
   value       = module.subnets.public_subnet_cidrs
   description = "Public subnet CIDRs"
+}
+
+output "public_subnet_ipv6_cidrs" {
+  value       = module.subnets.public_subnet_ipv6_cidrs
+  description = "Public subnet IPv6 CIDR blocks"
 }
 
 output "private_subnet_ids" {
@@ -13,9 +23,19 @@ output "private_subnet_ids" {
   description = "Private subnet IDs"
 }
 
+output "private_subnet_arns" {
+  value       = module.subnets.private_subnet_arns
+  description = "Private subnet ARNs"
+}
+
 output "private_subnet_cidrs" {
   value       = module.subnets.private_subnet_cidrs
   description = "Private subnet CIDRs"
+}
+
+output "private_subnet_ipv6_cidrs" {
+  value       = module.subnets.private_subnet_ipv6_cidrs
+  description = "Private subnet IPv6 CIDR blocks"
 }
 
 output "subnets" {
@@ -87,6 +107,16 @@ output "public_route_table_ids" {
   description = "Public subnet route table IDs"
 }
 
+output "public_network_acl_id" {
+  value       = module.subnets.public_network_acl_id
+  description = "ID of the Network ACL created for public subnets"
+}
+
+output "private_network_acl_id" {
+  value       = module.subnets.private_network_acl_id
+  description = "ID of the Network ACL created for private subnets"
+}
+
 output "route_tables" {
   value = {
     public : {
@@ -122,6 +152,21 @@ output "nat_gateway_ids" {
 output "nat_instance_ids" {
   value       = module.subnets.nat_instance_ids
   description = "NAT Instance IDs"
+}
+
+output "nat_instance_ami_id" {
+  value       = module.subnets.nat_instance_ami_id
+  description = "ID of AMI used by NAT instance"
+}
+
+output "nat_ips" {
+  value       = module.subnets.nat_ips
+  description = "Elastic IP Addresses in use by NAT"
+}
+
+output "nat_eip_allocation_ids" {
+  value       = module.subnets.nat_eip_allocation_ids
+  description = "Elastic IP allocations in use by NAT"
 }
 
 output "nat_gateway_public_ips" {
@@ -179,6 +224,11 @@ output "availability_zones" {
   value       = module.subnets.availability_zones
 }
 
+output "availability_zone_ids" {
+  description = "List of Availability Zones IDs where subnets were created, when available"
+  value       = module.subnets.availability_zone_ids
+}
+
 output "az_private_subnets_map" {
   description = "Map of AZ names to list of private subnet IDs in the AZs"
   value       = module.subnets.az_private_subnets_map
@@ -189,9 +239,29 @@ output "az_public_subnets_map" {
   value       = module.subnets.az_public_subnets_map
 }
 
+output "az_private_route_table_ids_map" {
+  description = "Map of AZ names to list of private route table IDs in the AZs"
+  value       = module.subnets.az_private_route_table_ids_map
+}
+
+output "az_public_route_table_ids_map" {
+  description = "Map of AZ names to list of public route table IDs in the AZs"
+  value       = module.subnets.az_public_route_table_ids_map
+}
+
 output "igw_id" {
   description = "The ID of the Internet Gateway"
   value       = module.vpc.igw_id
+}
+
+output "named_private_subnets_stats_map" {
+  description = "Map of subnet names (specified in `private_subnets_per_az_names` or `subnets_per_az_names` variable) to lists of objects with each object having four items: AZ, private subnet ID, private route table ID, NAT Gateway ID (the NAT Gateway that this private subnet routes to for egress)"
+  value       = module.subnets.named_private_subnets_stats_map
+}
+
+output "named_public_subnets_stats_map" {
+  description = "Map of subnet names (specified in `public_subnets_per_az_names` or `subnets_per_az_names` variable) to lists of objects with each object having four items: AZ, public subnet ID, public route table ID, NAT Gateway ID (the NAT Gateway in this public subnet, if any)"
+  value       = module.subnets.named_public_subnets_stats_map
 }
 
 output "flow_log_destination" {
