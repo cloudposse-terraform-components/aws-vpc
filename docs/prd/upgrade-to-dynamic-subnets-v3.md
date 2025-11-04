@@ -1,7 +1,7 @@
-# Product Requirements Document: Upgrade to dynamic-subnets v3.0.0
+# Product Requirements Document: Upgrade to dynamic-subnets v3.0.1
 
-**Version:** 1.1
-**Date:** 2025-11-02
+**Version:** 1.2
+**Date:** 2025-11-03
 **Status:** Implemented
 **Author:** CloudPosse Team
 
@@ -9,11 +9,13 @@
 
 ## Executive Summary
 
-This PRD documents the upgrade of the `aws-vpc` component to use the latest `terraform-aws-dynamic-subnets` module version 3.0.0. This upgrade brings significant new capabilities for managing VPC subnets with independent control over public and private subnet counts and flexible NAT Gateway placement options.
+This PRD documents the upgrade of the `aws-vpc` component to use the latest `terraform-aws-dynamic-subnets` module version 3.0.1. This upgrade brings significant new capabilities for managing VPC subnets with independent control over public and private subnet counts and flexible NAT Gateway placement options.
+
+**Note:** Version 3.0.1 is a patch release that fixes a critical bug in NAT Gateway routing when `max_nats` is set to fewer than the number of Availability Zones. See the [v3.0.1 Release Notes](https://github.com/cloudposse/terraform-aws-dynamic-subnets/releases/tag/v3.0.1) for details.
 
 ### Key Changes
 
-1. **Module Upgrade**: Updated `terraform-aws-dynamic-subnets` from v2.4.2 to v3.0.0
+1. **Module Upgrade**: Updated `terraform-aws-dynamic-subnets` from v2.4.2 to v3.0.1
 2. **New Subnet Configuration**: Added support for separate public/private subnet counts per AZ
 3. **Flexible NAT Placement**: Added support for index-based and name-based NAT Gateway placement
 4. **AWS Provider Compatibility**: Updated to support AWS Provider v5.0+ (including v6.x)
@@ -31,7 +33,7 @@ This PRD documents the upgrade of the `aws-vpc` component to use the latest `ter
 
 ## Background
 
-The `terraform-aws-dynamic-subnets` module v3.0.0 introduces several major enhancements:
+The `terraform-aws-dynamic-subnets` module v3.0.x introduces several major enhancements:
 
 1. **Separate Public/Private Configuration**: Previously, you could only create the same number of public and private subnets per AZ. Now you can configure them independently.
 
@@ -50,7 +52,7 @@ subnets_per_az_count = 2  # Creates 2 public + 2 private, NATs in both public
 max_nats = 1              # Limits to 1 NAT total (not per AZ, global limit)
 ```
 
-**After (v3.0.0):**
+**After (v3.0.x):**
 ```hcl
 public_subnets_per_az_count  = 2
 private_subnets_per_az_count = 3
@@ -65,7 +67,7 @@ Create different named subnets for public vs private, like "web" and "loadbalanc
 subnets_per_az_names = ["common"]  # Same names for public and private
 ```
 
-**After (v3.0.0):**
+**After (v3.0.x):**
 ```hcl
 public_subnets_per_az_names  = ["web", "loadbalancer"]
 private_subnets_per_az_names = ["app", "database", "cache"]
@@ -83,11 +85,12 @@ private_subnets_per_az_names = ["app", "database", "cache"]
 ```hcl
 module "subnets" {
   source  = "cloudposse/dynamic-subnets/aws"
-  version = "3.0.0"  # Upgraded from 2.4.2
+  version = "3.0.1"  # Upgraded from 2.4.2 (via 3.0.0)
 ```
 
 **Impact:**
-- Access to all new features in dynamic-subnets v3.0.0
+- Access to all new features in dynamic-subnets v3.0.x
+- v3.0.1 fixes critical bug in NAT routing when `max_nats < num_azs`
 - Support for AWS Provider v6.x
 - Enhanced subnet configuration capabilities
 
@@ -159,7 +162,7 @@ variable "nat_gateway_public_subnet_names" {
 ```hcl
 module "subnets" {
   source  = "cloudposse/dynamic-subnets/aws"
-  version = "3.0.0"
+  version = "3.0.1"
 
   # ... existing variables ...
 
@@ -672,7 +675,7 @@ The module will fail at apply time with a clear error message if invalid names a
 
 ### ✅ Completed
 
-1. ✅ Module upgraded to dynamic-subnets v3.0.0
+1. ✅ Module upgraded to dynamic-subnets v3.0.1 (from v2.4.2 via v3.0.0)
 2. ✅ All 6 new variables added and documented
 3. ✅ AWS Provider version updated to v5.0+ ⚠️ **BREAKING CHANGE** (drops v4.x support)
 4. ✅ Go and test dependencies updated to latest versions (Go 1.25, Terratest 0.52.0)
@@ -684,13 +687,14 @@ The module will fail at apply time with a clear error message if invalid names a
 10. ✅ Comprehensive PRD documentation created with breaking change clearly documented
 11. ✅ Added Terraform validation blocks for NAT placement variables (plan-time validation)
 12. ✅ Added `check` block for mutual exclusivity validation (catches errors before resource creation)
-13. ✅ Added 14 new outputs to expose all dynamic-subnets v3.0.0 capabilities
-14. ✅ Added comprehensive test coverage for v3.0.0 features:
+13. ✅ Added 14 new outputs to expose all dynamic-subnets v3.0.x capabilities
+14. ✅ Added comprehensive test coverage for v3.0.x features:
     - TestNATPlacementByIndex - validates index-based NAT placement
     - TestNATPlacementByName - validates name-based NAT placement
     - TestSeparateSubnetCounts - validates separate public/private subnet counts
     - TestValidationMutualExclusivity - validates mutual exclusivity check
 15. ✅ Created test stack configurations for all new test cases
+16. ✅ v3.0.1 patch applied - fixes critical NAT routing bug when `max_nats < num_azs`
 
 ### Future Enhancements
 
@@ -791,3 +795,4 @@ atmos terraform apply vpc -s <stack>
 |---------|------------|-----------------|-----------------------------------------------------------------------------------|
 | 1.0     | 2025-11-02 | CloudPosse Team | Initial PRD - upgraded to dynamic-subnets v3.0.0, added 6 new variables, updated test infrastructure |
 | 1.1     | 2025-11-02 | CloudPosse Team | Added comprehensive test improvements section, updated README.yaml with usage examples, documented test code enhancements and future test recommendations |
+| 1.2     | 2025-11-03 | CloudPosse Team | Updated to dynamic-subnets v3.0.1 - patch release fixing critical NAT routing bug when max_nats < num_azs |

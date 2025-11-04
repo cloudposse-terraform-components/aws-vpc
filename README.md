@@ -41,12 +41,13 @@ This component is responsible for provisioning a VPC and corresponding Subnets w
 - VPC Endpoints for AWS services (S3, DynamoDB, and interface endpoints)
 - AWS Shield Advanced protection for NAT Gateway EIPs (optional)
 
-**What's New in v3.0.0:**
-- Uses `terraform-aws-dynamic-subnets` v3.0.0 with enhanced subnet configuration
+**What's New in v3.0.1:**
+- Uses `terraform-aws-dynamic-subnets` v3.0.1 with enhanced subnet configuration
 - Separate public/private subnet counts and names per AZ
 - Precise NAT Gateway placement control for cost optimization
 - NAT Gateway IDs exposed in subnet stats outputs
 - Requires AWS Provider v5.0+
+- Fixes critical bug in NAT routing when `max_nats < num_azs`
 
 
 > [!TIP]
@@ -298,7 +299,7 @@ components:
 |------|--------|---------|
 | <a name="module_endpoint_security_groups"></a> [endpoint\_security\_groups](#module\_endpoint\_security\_groups) | cloudposse/security-group/aws | 2.2.0 |
 | <a name="module_iam_roles"></a> [iam\_roles](#module\_iam\_roles) | ../account-map/modules/iam-roles | n/a |
-| <a name="module_subnets"></a> [subnets](#module\_subnets) | cloudposse/dynamic-subnets/aws | 3.0.0 |
+| <a name="module_subnets"></a> [subnets](#module\_subnets) | cloudposse/dynamic-subnets/aws | 3.0.1 |
 | <a name="module_this"></a> [this](#module\_this) | cloudposse/label/null | 0.25.0 |
 | <a name="module_utils"></a> [utils](#module\_utils) | cloudposse/utils/aws | 1.4.0 |
 | <a name="module_vpc"></a> [vpc](#module\_vpc) | cloudposse/vpc/aws | 3.0.0 |
@@ -450,8 +451,8 @@ For additional context, refer to some of these links.
 
 - [cloudposse-terraform-components](https://github.com/orgs/cloudposse-terraform-components/repositories) - Cloud Posse's upstream component
 - [terraform-aws-vpc](https://github.com/cloudposse/terraform-aws-vpc) - CloudPosse VPC Module v3.0.0
-- [terraform-aws-dynamic-subnets](https://github.com/cloudposse/terraform-aws-dynamic-subnets) - CloudPosse Dynamic Subnets Module v3.0.0 - Enhanced subnet configuration with separate public/private control
-- [terraform-aws-dynamic-subnets v3.0.0 Release](https://github.com/cloudposse/terraform-aws-dynamic-subnets/releases/tag/v3.0.0) - Release notes for dynamic-subnets v3.0.0 with new features
+- [terraform-aws-dynamic-subnets](https://github.com/cloudposse/terraform-aws-dynamic-subnets) - CloudPosse Dynamic Subnets Module v3.0.1 - Enhanced subnet configuration with separate public/private control
+- [terraform-aws-dynamic-subnets v3.0.1 Release](https://github.com/cloudposse/terraform-aws-dynamic-subnets/releases/tag/v3.0.1) - Patch release fixing NAT routing bug when max_nats < num_azs
 
 
 
