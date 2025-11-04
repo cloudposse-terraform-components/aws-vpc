@@ -4,6 +4,12 @@ locals {
   nat_eip_aws_shield_protection_enabled = local.enabled && var.nat_eip_aws_shield_protection_enabled
   vpc_flow_logs_enabled                 = local.enabled && var.vpc_flow_logs_enabled
 
+  # Validate mutual exclusivity of NAT Gateway placement variables
+  nat_placement_conflict = (
+    var.nat_gateway_public_subnet_indices != null &&
+    var.nat_gateway_public_subnet_names != null
+  )
+
   # The usage of specific kubernetes.io/cluster/* resource tags were required before Kubernetes 1.19,
   # but are now deprecated. See https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html
 
@@ -137,9 +143,25 @@ module "vpc_endpoints" {
   context = module.this.context
 }
 
+# Validation resource to check NAT Gateway placement variable mutual exclusivity
+# This must run before the subnets module to catch configuration errors at plan time
+resource "null_resource" "nat_placement_validation" {
+  count = local.enabled ? 1 : 0
+
+  lifecycle {
+    precondition {
+      condition     = !local.nat_placement_conflict
+      error_message = "Cannot specify both nat_gateway_public_subnet_indices and nat_gateway_public_subnet_names. Choose one NAT placement method or leave both null for default behavior (NAT in all public subnets)."
+    }
+  }
+}
+
 module "subnets" {
   source  = "cloudposse/dynamic-subnets/aws"
   version = "3.0.1"
+
+  # Ensure validation runs before subnets module
+  depends_on = [null_resource.nat_placement_validation]
 
   availability_zones              = local.availability_zones
   availability_zone_ids           = local.availability_zone_ids
@@ -158,8 +180,20 @@ module "subnets" {
   public_subnets_additional_tags  = local.public_subnets_additional_tags
   private_subnets_additional_tags = local.private_subnets_additional_tags
   vpc_id                          = module.vpc.vpc_id
-  subnets_per_az_count            = var.subnets_per_az_count
-  subnets_per_az_names            = var.subnets_per_az_names
+
+  # Legacy variables (deprecated but still supported for backward compatibility)
+  subnets_per_az_count = var.subnets_per_az_count
+  subnets_per_az_names = var.subnets_per_az_names
+
+  # New variables for separate public/private subnet configuration
+  public_subnets_per_az_count  = var.public_subnets_per_az_count
+  public_subnets_per_az_names  = var.public_subnets_per_az_names
+  private_subnets_per_az_count = var.private_subnets_per_az_count
+  private_subnets_per_az_names = var.private_subnets_per_az_names
+
+  # New variables for flexible NAT Gateway placement
+  nat_gateway_public_subnet_indices = var.nat_gateway_public_subnet_indices
+  nat_gateway_public_subnet_names   = var.nat_gateway_public_subnet_names
 
   context = module.this.context
 }

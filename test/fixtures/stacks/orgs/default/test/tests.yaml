@@ -6,4 +6,8 @@ import:
   - catalog/usecase/public
   - catalog/usecase/with_flowlogs
   - catalog/usecase/with_endpoints
+  - catalog/usecase/nat-by-index
+  - catalog/usecase/nat-by-name
+  - catalog/usecase/separate-counts
+  - catalog/usecase/validation-conflict
 #  - catalog/usecase/with_ipam

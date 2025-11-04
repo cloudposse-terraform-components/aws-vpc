@@ -3,17 +3,34 @@ name: "aws-vpc"
 github_repo: "cloudposse-terraform-components/aws-vpc"
 # Short description of this project
 description: |-
-  This component is responsible for provisioning a VPC and corresponding Subnets.
-  Additionally, VPC Flow Logs can optionally be enabled for auditing purposes.
-  See the existing VPC configuration documentation for the provisioned subnets.
+  This component is responsible for provisioning a VPC and corresponding Subnets with advanced configuration capabilities.
+
+  **Key Features:**
+  - Independent control over public and private subnet counts per Availability Zone
+  - Flexible NAT Gateway placement (index-based or name-based)
+  - Named subnets with different naming schemes for public vs private
+  - Cost optimization through strategic NAT Gateway placement
+  - VPC Flow Logs support for auditing and compliance
+  - VPC Endpoints for AWS services (S3, DynamoDB, and interface endpoints)
+  - AWS Shield Advanced protection for NAT Gateway EIPs (optional)
+
+  **What's New in v3.0.1:**
+  - Uses `terraform-aws-dynamic-subnets` v3.0.1 with enhanced subnet configuration
+  - Separate public/private subnet counts and names per AZ
+  - Precise NAT Gateway placement control for cost optimization
+  - NAT Gateway IDs exposed in subnet stats outputs
+  - Requires AWS Provider v5.0+
+  - Fixes critical bug in NAT routing when `max_nats < num_azs`
 
 usage: |-
   **Stack Level**: Regional
 
-  Here's an example snippet for how to use this component.
+  ## Basic Configuration
+
+  Here's a basic example using legacy configuration (fully backward compatible):
 
   ```yaml
-  # catalog/vpc/defaults or catalog/vpc
+  # catalog/vpc/defaults
   components:
     terraform:
       vpc/defaults:
@@ -38,10 +55,13 @@ usage: |-
           vpc_flow_logs_bucket_stage_name: audit
           vpc_flow_logs_traffic_type: "ALL"
           subnet_type_tag_key: "example.net/subnet/type"
-          assign_generated_ipv6_cidr_block: true
+          # Legacy subnet configuration (still supported)
+          subnets_per_az_count: 1
+          subnets_per_az_names: ["common"]
   ```
 
   ```yaml
+  # stacks/ue2-dev.yaml
   import:
     - catalog/vpc
 
@@ -56,19 +76,188 @@ usage: |-
           ipv4_primary_cidr_block: "10.111.0.0/18"
   ```
 
+  ## Cost-Optimized NAT Configuration
+
+  Reduce NAT Gateway costs by placing NAT Gateways in only one public subnet per AZ:
+
+  ```yaml
+  components:
+    terraform:
+      vpc:
+        vars:
+          # Create 2 public subnets per AZ
+          public_subnets_per_az_count: 2
+          public_subnets_per_az_names: ["loadbalancer", "web"]
+
+          # Create 3 private subnets per AZ
+          private_subnets_per_az_count: 3
+          private_subnets_per_az_names: ["app", "database", "cache"]
+
+          # Place NAT Gateway ONLY in the first public subnet (index 0)
+          # This saves ~67% on NAT Gateway costs compared to NAT in all public subnets
+          nat_gateway_public_subnet_indices: [0]
+  ```
+
+  **Cost Savings Example (3 AZs, us-east-1):**
+  - Without optimization: 6 NAT Gateways (2 per AZ) = ~$270/month
+  - With optimization: 3 NAT Gateways (1 per AZ) = ~$135/month
+  - **Monthly Savings: ~$135 (~$1,620/year)**
+
+  **Important**: You can use EITHER `nat_gateway_public_subnet_indices` OR `nat_gateway_public_subnet_names`, but not both. The plan will fail if both are specified.
+
+  ## Named NAT Gateway Placement
+
+  Place NAT Gateways by subnet name instead of index:
+
+  ```yaml
+  components:
+    terraform:
+      vpc:
+        vars:
+          # Must specify both count and names when using named subnets
+          public_subnets_per_az_count: 2
+          public_subnets_per_az_names: ["loadbalancer", "web"]
+          private_subnets_per_az_count: 2
+          private_subnets_per_az_names: ["app", "database"]
+
+          # Place NAT Gateway only in "loadbalancer" subnet
+          nat_gateway_public_subnet_names: ["loadbalancer"]
+  ```
+
+  **Important**: When using `public_subnets_per_az_names` or `private_subnets_per_az_names`, you must also specify the corresponding count variables (`public_subnets_per_az_count` / `private_subnets_per_az_count`).
+
+  ## High-Availability NAT Configuration
+
+  For production environments requiring redundancy:
+
+  ```yaml
+  components:
+    terraform:
+      vpc:
+        vars:
+          public_subnets_per_az_count: 2
+          nat_gateway_public_subnet_indices: [0, 1]  # NAT in both public subnets per AZ
+  ```
+
+  ## Separate Public/Private Subnet Architecture
+
+  Different subnet counts and names for public vs private:
+
+  ```yaml
+  components:
+    terraform:
+      vpc:
+        vars:
+          # 2 public subnets per AZ for load balancers and public services
+          public_subnets_per_az_count: 2
+          public_subnets_per_az_names: ["alb", "nat"]
+
+          # 4 private subnets per AZ for different application tiers
+          private_subnets_per_az_count: 4
+          private_subnets_per_az_names: ["web", "app", "data", "cache"]
+
+          # NAT Gateway in "nat" subnet
+          nat_gateway_public_subnet_names: ["nat"]
+  ```
+
+  ## VPC Endpoints Configuration
+
+  Add VPC Endpoints for AWS services to reduce data transfer costs and improve security:
+
+  ```yaml
+  components:
+    terraform:
+      vpc:
+        vars:
+          # Gateway endpoints (no hourly charges)
+          gateway_vpc_endpoints:
+            - "s3"
+            - "dynamodb"
+
+          # Interface endpoints (hourly charges apply)
+          interface_vpc_endpoints:
+            - "ec2"
+            - "ecr.api"
+            - "ecr.dkr"
+            - "logs"
+            - "secretsmanager"
+  ```
+
+  ## Complete Production Example
+
+  ```yaml
+  components:
+    terraform:
+      vpc:
+        vars:
+          enabled: true
+          name: vpc
+          ipv4_primary_cidr_block: "10.0.0.0/16"
+
+          availability_zones:
+            - "a"
+            - "b"
+            - "c"
+
+          # Public subnets for ALB and NAT
+          public_subnets_per_az_count: 2
+          public_subnets_per_az_names: ["loadbalancer", "nat"]
+
+          # Private subnets for different tiers
+          private_subnets_per_az_count: 3
+          private_subnets_per_az_names: ["app", "database", "cache"]
+
+          # Cost-optimized NAT placement
+          nat_gateway_enabled: true
+          nat_gateway_public_subnet_names: ["nat"]
+
+          # VPC Flow Logs
+          vpc_flow_logs_enabled: true
+          vpc_flow_logs_bucket_environment_name: mgmt
+          vpc_flow_logs_bucket_stage_name: audit
+          vpc_flow_logs_traffic_type: "ALL"
+
+          # VPC Endpoints
+          gateway_vpc_endpoints:
+            - "s3"
+            - "dynamodb"
+          interface_vpc_endpoints:
+            - "ecr.api"
+            - "ecr.dkr"
+            - "logs"
+
+          subnet_type_tag_key: "example.net/subnet/type"
+  ```
+
 references:
   - name: cloudposse-terraform-components
     description: Cloud Posse's upstream component
     url: https://github.com/orgs/cloudposse-terraform-components/repositories
+  - name: terraform-aws-vpc
+    description: CloudPosse VPC Module v3.0.0
+    url: https://github.com/cloudposse/terraform-aws-vpc
+  - name: terraform-aws-dynamic-subnets
+    description: CloudPosse Dynamic Subnets Module v3.0.1 - Enhanced subnet configuration with separate public/private control
+    url: https://github.com/cloudposse/terraform-aws-dynamic-subnets
+  - name: terraform-aws-dynamic-subnets v3.0.1 Release
+    description: Patch release fixing NAT routing bug when max_nats < num_azs
+    url: https://github.com/cloudposse/terraform-aws-dynamic-subnets/releases/tag/v3.0.1
 tags:
   - component/vpc
   - layer/network
   - provider/aws
+  - nat-gateway
+  - subnets
+  - vpc-flow-logs
+  - vpc-endpoints
+  - cost-optimization
 # Categories of this project
 categories:
   - component/vpc
   - layer/network
   - provider/aws
+  - networking
+  - infrastructure
 # License of this project
 license: "APACHE2"
 # Badges to display
@@ -86,4 +275,16 @@ related:
   - name: "Atmos"
     description: "Atmos is like docker-compose but for your infrastructure"
     url: "https://atmos.tools"
+  - name: "terraform-aws-vpc"
+    description: "Terraform module for provisioning VPCs with advanced features"
+    url: "https://github.com/cloudposse/terraform-aws-vpc"
+  - name: "terraform-aws-dynamic-subnets"
+    description: "Terraform module for creating dynamic subnets with flexible configuration"
+    url: "https://github.com/cloudposse/terraform-aws-dynamic-subnets"
+  - name: "AWS VPC Documentation"
+    description: "Official AWS VPC documentation"
+    url: "https://docs.aws.amazon.com/vpc/"
+  - name: "AWS NAT Gateway Pricing"
+    description: "AWS NAT Gateway pricing for cost optimization planning"
+    url: "https://aws.amazon.com/vpc/pricing/"
 contributors: [] # If included generates contribs
