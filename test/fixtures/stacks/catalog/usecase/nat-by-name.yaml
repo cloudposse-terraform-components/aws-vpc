@@ -9,7 +9,9 @@ components:
           - "b"
           - "c"
         # Test named subnet configuration
+        public_subnets_per_az_count: 2
         public_subnets_per_az_names: ["nat", "web"]
+        private_subnets_per_az_count: 2
         private_subnets_per_az_names: ["app", "database"]
         # Test NAT Gateway placement by name - only in "nat" named subnets
         nat_gateway_public_subnet_names: ["nat"]

@@ -96,14 +96,6 @@ module "vpc" {
   context = module.this.context
 }
 
-# Validate NAT Gateway placement variable mutual exclusivity at plan time
-check "nat_placement_mutual_exclusivity" {
-  assert {
-    condition     = !local.nat_placement_conflict
-    error_message = "Cannot specify both nat_gateway_public_subnet_indices and nat_gateway_public_subnet_names. Choose one NAT placement method or leave both null for default behavior (NAT in all public subnets)."
-  }
-}
-
 # We could create a security group per endpoint,
 # but until we are ready to customize them by service, it is just a waste
 # of resources. We use a single security group for all endpoints.
@@ -151,9 +143,25 @@ module "vpc_endpoints" {
   context = module.this.context
 }
 
+# Validation resource to check NAT Gateway placement variable mutual exclusivity
+# This must run before the subnets module to catch configuration errors at plan time
+resource "null_resource" "nat_placement_validation" {
+  count = local.enabled ? 1 : 0
+
+  lifecycle {
+    precondition {
+      condition     = !local.nat_placement_conflict
+      error_message = "Cannot specify both nat_gateway_public_subnet_indices and nat_gateway_public_subnet_names. Choose one NAT placement method or leave both null for default behavior (NAT in all public subnets)."
+    }
+  }
+}
+
 module "subnets" {
   source  = "cloudposse/dynamic-subnets/aws"
   version = "3.0.1"
+
+  # Ensure validation runs before subnets module
+  depends_on = [null_resource.nat_placement_validation]
 
   availability_zones              = local.availability_zones
   availability_zone_ids           = local.availability_zone_ids
