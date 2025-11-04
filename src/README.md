@@ -112,6 +112,8 @@ components:
 - With optimization: 3 NAT Gateways (1 per AZ) = ~$135/month
 - **Monthly Savings: ~$135 (~$1,620/year)**
 
+**Important**: You can use EITHER `nat_gateway_public_subnet_indices` OR `nat_gateway_public_subnet_names`, but not both. The plan will fail if both are specified.
+
 ## Named NAT Gateway Placement
 
 Place NAT Gateways by subnet name instead of index:
@@ -121,12 +123,17 @@ components:
   terraform:
     vpc:
       vars:
+        # Must specify both count and names when using named subnets
+        public_subnets_per_az_count: 2
         public_subnets_per_az_names: ["loadbalancer", "web"]
+        private_subnets_per_az_count: 2
         private_subnets_per_az_names: ["app", "database"]
 
         # Place NAT Gateway only in "loadbalancer" subnet
         nat_gateway_public_subnet_names: ["loadbalancer"]
 ```
+
+**Important**: When using `public_subnets_per_az_names` or `private_subnets_per_az_names`, you must also specify the corresponding count variables (`public_subnets_per_az_count` / `private_subnets_per_az_count`).
 
 ## High-Availability NAT Configuration
 
