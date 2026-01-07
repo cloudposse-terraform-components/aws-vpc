@@ -158,7 +158,7 @@ resource "null_resource" "nat_placement_validation" {
 
 module "subnets" {
   source  = "cloudposse/dynamic-subnets/aws"
-  version = "3.0.1"
+  version = "3.1.0"
 
   # Ensure validation runs before subnets module
   depends_on = [null_resource.nat_placement_validation]
