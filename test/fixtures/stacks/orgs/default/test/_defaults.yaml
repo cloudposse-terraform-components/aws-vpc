@@ -3,10 +3,10 @@ import:
 
 terraform:
   backend_type: local
-  backend:
-    local:
-      path: '{{ getenv "COMPONENT_HELPER_STATE_DIR" | default "../../../state" }}/{{ .component }}/terraform.tfstate'
-      workspace_dir: '{{ getenv "COMPONENT_HELPER_STATE_DIR" | default "../../../state" }}/{{ .component }}/'
+  # backend:
+  #   local:
+  #     path: '{{ getenv "COMPONENT_HELPER_STATE_DIR" | default "../../../state" }}/{{ .component }}/terraform.tfstate'
+  #     workspace_dir: '{{ getenv "COMPONENT_HELPER_STATE_DIR" | default "../../../state" }}/{{ .component }}/'
 
   vars:
     namespace: eg
