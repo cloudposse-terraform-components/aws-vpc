@@ -19,7 +19,7 @@ spec:
 
     - component: "vpc-flow-logs-bucket"
       source: github.com/cloudposse-terraform-components/aws-vpc-flow-logs-bucket.git//src?ref={{.Version}}
-      version: v1.535.0
+      version: v1.537.0
       targets:
         - "components/terraform/vpc-flow-logs-bucket"
       included_paths:
