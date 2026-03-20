@@ -419,7 +419,7 @@ func TestRunVPCSuite(t *testing.T) {
 
 	// Add dependency on VPC Flow Logs bucket
 	suite.AddDependency(t, vpcFlowLogsBucket, defaultStack, nil)
-	
+
 	// Run the test suite
 	helper.Run(t, suite)
 }
