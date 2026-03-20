@@ -1,9 +1,6 @@
 import:
   - catalog/account-map
 
-env:
-  ATMOS_PROCESS_TEMPLATES: true
-
 terraform:
   backend_type: local
   backend:

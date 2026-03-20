@@ -17,6 +17,31 @@
 # are considered paths relative to `base_path`.
 base_path: ""
 
+auth:
+  providers:
+    saml:
+      kind: aws/saml
+      region: us-east-1
+      url: https://accounts.google.com/o/saml2/initsso?idpid=C01yjz1jl&spid=1081421647897&forceauthn=false
+      driver: Browser
+
+  identities:
+    login:
+      kind: aws/assume-role
+      via:
+        provider: saml
+      principal:
+        assume_role: arn:aws:iam::582055374050:role/cptest-core-gbl-identity-managers
+        session_name: saml-user
+    test-account:
+      kind: aws/assume-role
+      default: true
+      via:
+        identity: login
+      principal:
+        assume_role: arn:aws:iam::799847381734:role/cptest-test-gbl-sandbox-admin
+        session_name: test-account
+
 components:
   terraform:
     # Can also be set using `ATMOS_COMPONENTS_TERRAFORM_BASE_PATH` ENV var, or `--terraform-dir` command-line argument
@@ -84,4 +109,27 @@ commands:
         atmos describe stacks --format json --sections=component,metadata --components=component -s sandbox
         | jq '.[] | .components.terraform | to_entries | 
         map(select(.value.component == "component" and (.value.metadata.type != "abstract" or .value.metadata.type == null))) 
-        | .[].key' 
+        | .[].key'
+
+  - name: "test"
+    description: "Run component tests"
+    arguments:
+      - name: "name"
+        description: "Name of a specific test to run (e.g. TestPrivateVPC, TestPublicVPC). Omit to run all tests."
+        required: false
+    flags:
+      - name: "timeout"
+        shorthand: "t"
+        description: "Test timeout duration"
+        default: "60m"
+        required: false
+    env:
+      - key: AWS_EC2_METADATA_DISABLED
+        value: "true"
+    steps:
+      - >
+        cd ../
+        && go mod download
+        && echo "Running tests{{ if .Arguments.name }} (filter: {{ .Arguments.name }}){{ end }}..."
+        && go test -v -timeout {{ .Flags.timeout }}
+        {{ if .Arguments.name }}-run "TestRunVPCSuite/{{ .Arguments.name }}"{{ end }}
