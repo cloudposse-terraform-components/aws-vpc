@@ -329,12 +329,12 @@ variable "nat_gateway_public_subnet_indices" {
   nullable    = true
 
   validation {
-    condition     = var.nat_gateway_public_subnet_indices == null || length(var.nat_gateway_public_subnet_indices) > 0
+    condition     = var.nat_gateway_public_subnet_indices == null || try(length(var.nat_gateway_public_subnet_indices) > 0, false)
     error_message = "The nat_gateway_public_subnet_indices list cannot be empty. Either provide at least one index, or set to null to use default behavior."
   }
 
   validation {
-    condition     = var.nat_gateway_public_subnet_indices == null || alltrue([for idx in var.nat_gateway_public_subnet_indices : idx >= 0])
+    condition     = var.nat_gateway_public_subnet_indices == null || try(alltrue([for idx in var.nat_gateway_public_subnet_indices : idx >= 0]), false)
     error_message = "All indices in nat_gateway_public_subnet_indices must be non-negative (>= 0)."
   }
 }
@@ -351,12 +351,12 @@ variable "nat_gateway_public_subnet_names" {
   nullable    = true
 
   validation {
-    condition     = var.nat_gateway_public_subnet_names == null || length(var.nat_gateway_public_subnet_names) > 0
+    condition     = var.nat_gateway_public_subnet_names == null || try(length(var.nat_gateway_public_subnet_names) > 0, false)
     error_message = "The nat_gateway_public_subnet_names list cannot be empty. Either provide at least one subnet name, or set to null to use default behavior."
   }
 
   validation {
-    condition     = var.nat_gateway_public_subnet_names == null || alltrue([for name in var.nat_gateway_public_subnet_names : can(regex("^[a-z0-9-]+$", name))])
+    condition     = var.nat_gateway_public_subnet_names == null || try(alltrue([for name in var.nat_gateway_public_subnet_names : can(regex("^[a-z0-9-]+$", name))]), false)
     error_message = "All subnet names in nat_gateway_public_subnet_names must contain only lowercase letters, numbers, and hyphens."
   }
 }
