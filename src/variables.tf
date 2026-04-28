@@ -186,7 +186,7 @@ variable "vpc_flow_logs_format" {
 
 variable "vpc_flow_logs_max_aggregation_interval" {
   type        = number
-  description = "he maximum interval of time during which a flow of packets is captured and aggregated into a flow log record. Valid Values: 60 seconds (1 minute) or 600 seconds (10 minutes)"
+  description = "The maximum interval of time during which a flow of packets is captured and aggregated into a flow log record. Valid Values: 60 seconds (1 minute) or 600 seconds (10 minutes)"
   default     = 600
 }
 
