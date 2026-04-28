@@ -190,12 +190,6 @@ variable "vpc_flow_logs_max_aggregation_interval" {
   default     = 600
 }
 
-variable "vpc_flow_logs_subnet_id" {
-  type        = string
-  description = "Subnet ID to attach to"
-  default     = null
-}
-
 variable "vpc_flow_logs_bucket_environment_name" {
   type        = string
   description = "The name of the environment where the VPC Flow Logs bucket is provisioned"

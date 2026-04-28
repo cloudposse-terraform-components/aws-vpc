@@ -11,7 +11,6 @@ resource "aws_flow_log" "default" {
   log_format               = var.vpc_flow_logs_format
   max_aggregation_interval = var.vpc_flow_logs_max_aggregation_interval
   traffic_type             = var.vpc_flow_logs_traffic_type
-  subnet_id                = var.vpc_flow_logs_subnet_id
   vpc_id                   = module.vpc.vpc_id
 
   destination_options {
