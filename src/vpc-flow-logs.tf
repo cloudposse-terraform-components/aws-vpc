@@ -5,11 +5,13 @@ locals {
 }
 
 resource "aws_flow_log" "default" {
-  count                = local.vpc_flow_logs_enabled ? 1 : 0
-  log_destination      = local.log_destination
-  log_destination_type = var.vpc_flow_logs_log_destination_type
-  traffic_type         = var.vpc_flow_logs_traffic_type
-  vpc_id               = module.vpc.vpc_id
+  count                    = local.vpc_flow_logs_enabled ? 1 : 0
+  log_destination          = local.log_destination
+  log_destination_type     = var.vpc_flow_logs_log_destination_type
+  log_format               = var.vpc_flow_logs_format
+  max_aggregation_interval = var.vpc_flow_logs_max_aggregation_interval
+  traffic_type             = var.vpc_flow_logs_traffic_type
+  vpc_id                   = module.vpc.vpc_id
 
   destination_options {
     file_format                = var.vpc_flow_logs_destination_options_file_format

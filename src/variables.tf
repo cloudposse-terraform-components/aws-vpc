@@ -178,6 +178,18 @@ variable "vpc_flow_logs_log_destination_type" {
   default     = "s3"
 }
 
+variable "vpc_flow_logs_format" {
+  type        = string
+  description = "The fields to include in the flow log record. Accepted format example: `$${interface-id} $${srcaddr} $${dstaddr} $${srcport} $${dstport}`"
+  default     = null
+}
+
+variable "vpc_flow_logs_max_aggregation_interval" {
+  type        = number
+  description = "The maximum interval of time during which a flow of packets is captured and aggregated into a flow log record. Valid Values: 60 seconds (1 minute) or 600 seconds (10 minutes)"
+  default     = 600
+}
+
 variable "vpc_flow_logs_bucket_environment_name" {
   type        = string
   description = "The name of the environment where the VPC Flow Logs bucket is provisioned"
@@ -360,4 +372,3 @@ variable "nat_gateway_public_subnet_names" {
     error_message = "All subnet names in nat_gateway_public_subnet_names must contain only lowercase letters, numbers, and hyphens."
   }
 }
-
