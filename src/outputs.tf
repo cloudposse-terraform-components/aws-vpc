@@ -254,6 +254,16 @@ output "igw_id" {
   value       = module.vpc.igw_id
 }
 
+output "named_private_subnets_map" {
+  description = "Map of subnet names (specified in `private_subnets_per_az_names` or `subnets_per_az_names` variable) to lists of private subnet IDs. Same value as `named_subnets.private`"
+  value       = module.subnets.named_private_subnets_map
+}
+
+output "named_public_subnets_map" {
+  description = "Map of subnet names (specified in `public_subnets_per_az_names` or `subnets_per_az_names` variable) to lists of public subnet IDs. Same value as `named_subnets.public`"
+  value       = module.subnets.named_public_subnets_map
+}
+
 output "named_private_subnets_stats_map" {
   description = "Map of subnet names (specified in `private_subnets_per_az_names` or `subnets_per_az_names` variable) to lists of objects with each object having four items: AZ, private subnet ID, private route table ID, NAT Gateway ID (the NAT Gateway that this private subnet routes to for egress)"
   value       = module.subnets.named_private_subnets_stats_map
