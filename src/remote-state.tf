@@ -1,5 +1,6 @@
 module "vpc_flow_logs_bucket" {
-  count = local.vpc_flow_logs_enabled ? 1 : 0
+  # Not needed when the bucket ARN is passed in with `vpc_flow_logs_bucket_arn`
+  count = local.vpc_flow_logs_enabled && var.vpc_flow_logs_bucket_arn == null ? 1 : 0
 
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
   version = "2.0.1"
