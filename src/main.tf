@@ -143,8 +143,14 @@ module "vpc_endpoints" {
   context = module.this.context
 }
 
-# Validation resource to check NAT Gateway placement variable mutual exclusivity
-# This must run before the subnets module to catch configuration errors at plan time
+# Validation resource to check NAT Gateway placement variable mutual exclusivity.
+# The precondition is checked at plan time, so a conflicting configuration fails the plan
+# before anything is created.
+#
+# Do not add `depends_on = [null_resource.nat_placement_validation]` to `module "subnets"`:
+# while this resource is pending creation, `depends_on` defers every data source inside the
+# module (e.g. `aws_availability_zones`) to apply time, and the first plan of a new VPC fails
+# with "Invalid count argument".
 resource "null_resource" "nat_placement_validation" {
   count = local.enabled ? 1 : 0
 
@@ -159,9 +165,6 @@ resource "null_resource" "nat_placement_validation" {
 module "subnets" {
   source  = "cloudposse/dynamic-subnets/aws"
   version = "3.1.1"
-
-  # Ensure validation runs before subnets module
-  depends_on = [null_resource.nat_placement_validation]
 
   availability_zones              = local.availability_zones
   availability_zone_ids           = local.availability_zone_ids
@@ -191,9 +194,11 @@ module "subnets" {
   private_subnets_per_az_count = var.private_subnets_per_az_count
   private_subnets_per_az_names = var.private_subnets_per_az_names
 
-  # New variables for flexible NAT Gateway placement
+  # New variables for flexible NAT Gateway placement.
+  # On a conflict, `null_resource.nat_placement_validation` fails the plan. Only the indices are
+  # passed on in that case, so the subnets module does not raise its own, less helpful, errors.
   nat_gateway_public_subnet_indices = var.nat_gateway_public_subnet_indices
-  nat_gateway_public_subnet_names   = var.nat_gateway_public_subnet_names
+  nat_gateway_public_subnet_names   = local.nat_placement_conflict ? null : var.nat_gateway_public_subnet_names
 
   context = module.this.context
 }
