@@ -333,9 +333,9 @@ func (s *ComponentSuite) TestNATPlacementByName() {
 	assert.Contains(s.T(), namedSubnets, "private", "Should have private named subnets map")
 
 	// Validate the flat named subnet maps (read by other components, e.g. aws-network-firewall)
-	namedPublicSubnets := atmos.OutputMapOfObjects(s.T(), options, "named_public_subnets_map")
+	namedPublicSubnets := atmos.OutputMap(s.T(), options, "named_public_subnets_map")
 	assert.Contains(s.T(), namedPublicSubnets, "nat", "Should have the 'nat' named public subnets")
-	namedPrivateSubnets := atmos.OutputMapOfObjects(s.T(), options, "named_private_subnets_map")
+	namedPrivateSubnets := atmos.OutputMap(s.T(), options, "named_private_subnets_map")
 	assert.Contains(s.T(), namedPrivateSubnets, "app", "Should have the 'app' named private subnets")
 
 	// Validate no drift
