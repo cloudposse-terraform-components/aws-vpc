@@ -289,22 +289,15 @@ components:
 ## Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0.0 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | >= 3.0 |
 
-## Providers
-
-| Name | Version |
-|------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.0.0 |
-| <a name="provider_null"></a> [null](#provider\_null) | >= 3.0 |
-
 ## Modules
 
 | Name | Source | Version |
-|------|--------|---------|
+| ---- | ------ | ------- |
 | <a name="module_endpoint_security_groups"></a> [endpoint\_security\_groups](#module\_endpoint\_security\_groups) | cloudposse/security-group/aws | 2.2.0 |
 | <a name="module_iam_roles"></a> [iam\_roles](#module\_iam\_roles) | ../account-map/modules/iam-roles | n/a |
 | <a name="module_subnets"></a> [subnets](#module\_subnets) | cloudposse/dynamic-subnets/aws | 3.1.1 |
@@ -312,12 +305,12 @@ components:
 | <a name="module_utils"></a> [utils](#module\_utils) | cloudposse/utils/aws | 1.4.0 |
 | <a name="module_vpc"></a> [vpc](#module\_vpc) | cloudposse/vpc/aws | 3.0.0 |
 | <a name="module_vpc_endpoints"></a> [vpc\_endpoints](#module\_vpc\_endpoints) | cloudposse/vpc/aws//modules/vpc-endpoints | 3.0.0 |
-| <a name="module_vpc_flow_logs_bucket"></a> [vpc\_flow\_logs\_bucket](#module\_vpc\_flow\_logs\_bucket) | cloudposse/stack-config/yaml//modules/remote-state | 2.0.0 |
+| <a name="module_vpc_flow_logs_bucket"></a> [vpc\_flow\_logs\_bucket](#module\_vpc\_flow\_logs\_bucket) | cloudposse/stack-config/yaml//modules/remote-state | 2.0.1 |
 
 ## Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [aws_flow_log.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/flow_log) | resource |
 | [aws_shield_protection.nat_eip_shield_protection](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/shield_protection) | resource |
 | [null_resource.nat_placement_validation](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
@@ -327,7 +320,7 @@ components:
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_additional_tag_map"></a> [additional\_tag\_map](#input\_additional\_tag\_map) | Additional key-value pairs to add to each map in `tags_as_list_of_maps`. Not added to `tags` or `id`.<br/>This is for some rare cases where resources want additional configuration of tags<br/>and therefore take a list of maps with tag key, value, and additional configuration. | `map(string)` | `{}` | no |
 | <a name="input_assign_generated_ipv6_cidr_block"></a> [assign\_generated\_ipv6\_cidr\_block](#input\_assign\_generated\_ipv6\_cidr\_block) | When `true`, assign AWS generated IPv6 CIDR block to the VPC.  Conflicts with `ipv6_ipam_pool_id`. | `bool` | `false` | no |
 | <a name="input_attributes"></a> [attributes](#input\_attributes) | ID element. Additional attributes (e.g. `workers` or `cluster`) to add to `id`,<br/>in the order they appear in the list. New attributes are appended to the<br/>end of the list. The elements of the list are joined by the `delimiter`<br/>and treated as a single ID element. | `list(string)` | `[]` | no |
@@ -383,13 +376,15 @@ components:
 | <a name="input_vpc_flow_logs_destination_options_hive_compatible_partitions"></a> [vpc\_flow\_logs\_destination\_options\_hive\_compatible\_partitions](#input\_vpc\_flow\_logs\_destination\_options\_hive\_compatible\_partitions) | Flag to enable/disable VPC Flow Logs hive compatible partitions | `bool` | `false` | no |
 | <a name="input_vpc_flow_logs_destination_options_per_hour_partition"></a> [vpc\_flow\_logs\_destination\_options\_per\_hour\_partition](#input\_vpc\_flow\_logs\_destination\_options\_per\_hour\_partition) | Flag to enable/disable VPC Flow Logs per hour partition | `bool` | `false` | no |
 | <a name="input_vpc_flow_logs_enabled"></a> [vpc\_flow\_logs\_enabled](#input\_vpc\_flow\_logs\_enabled) | Enable or disable the VPC Flow Logs | `bool` | `true` | no |
+| <a name="input_vpc_flow_logs_format"></a> [vpc\_flow\_logs\_format](#input\_vpc\_flow\_logs\_format) | The fields to include in the flow log record. Accepted format example: `${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport}` | `string` | `null` | no |
 | <a name="input_vpc_flow_logs_log_destination_type"></a> [vpc\_flow\_logs\_log\_destination\_type](#input\_vpc\_flow\_logs\_log\_destination\_type) | The type of the logging destination. Valid values: `cloud-watch-logs`, `s3` | `string` | `"s3"` | no |
+| <a name="input_vpc_flow_logs_max_aggregation_interval"></a> [vpc\_flow\_logs\_max\_aggregation\_interval](#input\_vpc\_flow\_logs\_max\_aggregation\_interval) | The maximum interval of time during which a flow of packets is captured and aggregated into a flow log record. Valid Values: 60 seconds (1 minute) or 600 seconds (10 minutes) | `number` | `600` | no |
 | <a name="input_vpc_flow_logs_traffic_type"></a> [vpc\_flow\_logs\_traffic\_type](#input\_vpc\_flow\_logs\_traffic\_type) | The type of traffic to capture. Valid values: `ACCEPT`, `REJECT`, `ALL` | `string` | `"ALL"` | no |
 
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_availability_zone_ids"></a> [availability\_zone\_ids](#output\_availability\_zone\_ids) | List of Availability Zones IDs where subnets were created, when available |
 | <a name="output_availability_zones"></a> [availability\_zones](#output\_availability\_zones) | List of Availability Zones where subnets were created |
 | <a name="output_az_private_route_table_ids_map"></a> [az\_private\_route\_table\_ids\_map](#output\_az\_private\_route\_table\_ids\_map) | Map of AZ names to list of private route table IDs in the AZs |
@@ -503,7 +498,7 @@ For additional context, refer to some of these links.
 > - **Customer Workshops.** Engage with our team in weekly workshops, gaining insights and strategies to continuously improve and innovate.
 >
 > <a href="https://cpco.io/commercial-support?utm_source=github&utm_medium=readme&utm_campaign=cloudposse-terraform-components/aws-vpc&utm_content=commercial_support"><img alt="Request Quote" src="https://img.shields.io/badge/request%20quote-success.svg?style=for-the-badge"/></a>
->
+> 
 </details>
 
 ## ✨ Contributing
