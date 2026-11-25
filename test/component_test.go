@@ -407,6 +407,18 @@ func (s *ComponentSuite) TestValidationMutualExclusivity() {
 	s.T().Log("Validation test passed - mutual exclusivity check is working correctly at plan time")
 }
 
+// TestFirstPlanWithAvailabilityZoneIDs tests that a new VPC that uses Availability Zone IDs plans in one pass.
+// The subnets module reads the `aws_availability_zones` data source in that case; if that read is deferred
+// to apply time, the subnet counts are unknown and the plan fails with "Invalid count argument".
+func (s *ComponentSuite) TestFirstPlanWithAvailabilityZoneIDs() {
+	const component = "vpc/az-ids"
+
+	options := s.GetAtmosOptions(component, defaultStack, nil)
+
+	_, err := atmos.PlanE(s.T(), options)
+	require.NoError(s.T(), err, "The first plan of a new VPC with availability_zone_ids should succeed")
+}
+
 // TestEnabledFlag tests the enabled flag functionality
 func (s *ComponentSuite) TestEnabledFlag() {
 	const component = "vpc/disabled"

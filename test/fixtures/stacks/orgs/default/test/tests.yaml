@@ -10,4 +10,5 @@ import:
   - catalog/usecase/nat-by-name
   - catalog/usecase/separate-counts
   - catalog/usecase/validation-conflict
+  - catalog/usecase/az-ids
 #  - catalog/usecase/with_ipam

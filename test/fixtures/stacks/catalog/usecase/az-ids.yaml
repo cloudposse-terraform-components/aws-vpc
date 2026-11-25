@@ -1,0 +1,19 @@
+components:
+  terraform:
+    vpc/az-ids:
+      metadata:
+        component: target
+      vars:
+        name: "vpc-terraform"
+        # Availability Zone IDs make the subnets module read the `aws_availability_zones` data source.
+        # The first plan of a new VPC must not defer that read to apply time ("Invalid count argument").
+        availability_zone_ids:
+          - "use2-az1"
+          - "use2-az2"
+        nat_gateway_enabled: true
+        nat_instance_enabled: false
+        max_nats: 1
+        subnet_type_tag_key: "eg.cptest.co/subnet/type"
+        max_subnet_count: 2
+        vpc_flow_logs_enabled: false
+        ipv4_primary_cidr_block: "172.16.0.0/16"
