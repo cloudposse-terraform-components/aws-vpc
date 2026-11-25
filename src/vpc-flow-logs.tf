@@ -1,7 +1,8 @@
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/flow_log
 locals {
-  account_name    = lookup(module.this.descriptors, "account_name", module.this.stage)
-  log_destination = format("%v/%v/%v/", one(module.vpc_flow_logs_bucket[*].outputs.vpc_flow_logs_bucket_arn), local.account_name, module.this.id)
+  account_name             = lookup(module.this.descriptors, "account_name", module.this.stage)
+  vpc_flow_logs_bucket_arn = var.vpc_flow_logs_bucket_arn != null ? var.vpc_flow_logs_bucket_arn : one(module.vpc_flow_logs_bucket[*].outputs.vpc_flow_logs_bucket_arn)
+  log_destination          = format("%v/%v/%v/", local.vpc_flow_logs_bucket_arn, local.account_name, module.this.id)
 }
 
 resource "aws_flow_log" "default" {

@@ -184,6 +184,9 @@ module "subnets" {
   private_subnets_additional_tags = local.private_subnets_additional_tags
   vpc_id                          = module.vpc.vpc_id
 
+  # `null` keeps the module default
+  public_route_table_per_subnet_enabled = var.public_route_table_per_subnet_enabled
+
   # Legacy variables (deprecated but still supported for backward compatibility)
   subnets_per_az_count = var.subnets_per_az_count
   subnets_per_az_names = var.subnets_per_az_names

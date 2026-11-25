@@ -149,6 +149,17 @@ variable "map_public_ip_on_launch" {
   description = "Instances launched into a public subnet should be assigned a public IP address"
 }
 
+variable "public_route_table_per_subnet_enabled" {
+  type        = bool
+  description = <<-EOT
+    If `true`, a separate route table is created for, and associated with, each public subnet.
+    If `false`, a single route table is created and associated with every public subnet.
+    If `null`, the `cloudposse/dynamic-subnets` module default is used (a single public route table, unless DNS64/NAT64 is enabled).
+    Per-subnet public route tables are needed for per-AZ routing, e.g. symmetric routing through AWS Network Firewall endpoints.
+    EOT
+  default     = null
+}
+
 variable "subnet_type_tag_key" {
   type        = string
   description = "Key for subnet type tag to provide information about the type of subnets, e.g. `cpco/subnet/type=private` or `cpcp/subnet/type=public`"
@@ -259,8 +270,24 @@ variable "subnets_per_az_names" {
 
 variable "vpc_flow_logs_bucket_component_name" {
   type        = string
-  description = "The name of the VPC flow logs bucket component"
+  description = "The name of the VPC flow logs bucket component. Ignored when `vpc_flow_logs_bucket_arn` is set"
   default     = "vpc-flow-logs-bucket"
+}
+
+variable "vpc_flow_logs_bucket_arn" {
+  type        = string
+  description = <<-EOT
+    ARN of the S3 bucket for VPC Flow Logs. When set, the `vpc_flow_logs_bucket_component_name` remote state lookup
+    (and the `vpc_flow_logs_bucket_environment_name` / `_stage_name` / `_tenant_name` locators) is skipped and this bucket is used.
+    Use this for a bucket that the remote state lookup cannot locate, for example a central bucket in a log archive account
+    in another namespace, passed in with `!terraform.state` or `!store`.
+    EOT
+  default     = null
+
+  validation {
+    condition     = var.vpc_flow_logs_bucket_arn == null || can(regex("^arn:[^:]+:s3:::[^/]+$", var.vpc_flow_logs_bucket_arn))
+    error_message = "The vpc_flow_logs_bucket_arn must be an S3 bucket ARN (e.g. `arn:aws:s3:::my-bucket`), or null."
+  }
 }
 
 variable "vpc_flow_logs_destination_options_file_format" {

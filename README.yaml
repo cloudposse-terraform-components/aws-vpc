@@ -182,6 +182,35 @@ usage: |-
             - "secretsmanager"
   ```
 
+  ## Central VPC Flow Logs Bucket
+
+  By default the flow logs bucket is found with a remote state lookup of `vpc_flow_logs_bucket_component_name`,
+  located with `vpc_flow_logs_bucket_environment_name`, `vpc_flow_logs_bucket_stage_name` and `vpc_flow_logs_bucket_tenant_name`.
+  If the bucket cannot be located that way (for example, a central bucket in a log archive account in another namespace),
+  pass its ARN directly. The remote state lookup is then skipped:
+
+  ```yaml
+  components:
+    terraform:
+      vpc:
+        vars:
+          vpc_flow_logs_enabled: true
+          vpc_flow_logs_bucket_arn: !terraform.state vpc-flow-logs-bucket core-ue1-audit vpc_flow_logs_bucket_arn
+  ```
+
+  ## Per-Subnet Public Route Tables
+
+  Create one route table per public subnet instead of a single shared one, e.g. to route each AZ's traffic through the
+  AWS Network Firewall endpoint in the same AZ:
+
+  ```yaml
+  components:
+    terraform:
+      vpc:
+        vars:
+          public_route_table_per_subnet_enabled: true
+  ```
+
   ## Complete Production Example
 
   ```yaml
